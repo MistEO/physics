@@ -1,4 +1,4 @@
-SOURCE = main.cpp object.cpp wholetimer.cpp
+SOURCE = main.cpp object.cpp wholetimer.cpp space.cpp
 
 TARGET = demo
 

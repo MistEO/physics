@@ -9,7 +9,7 @@ public:
     void push_object(Object* object);
 
 private:
-    WholeTimer();
+    WholeTimer() = default;
 
     void tick();
 

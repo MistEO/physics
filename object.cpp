@@ -1,48 +1,75 @@
 #include "object.h"
 
 Object::Object(double mass, double x_coordinate, double y_coordinate, double x_velocity, double y_velocity)
-    : mass(mass)
-    , x_coordinate(x_coordinate)
-    , y_coordinate(y_coordinate)
-    , x_velocity(x_velocity)
-    , y_velocity(y_velocity)
+    : m_mass(mass)
+    , m_coordinate(x_coordinate, y_coordinate)
+    , m_velocity(x_velocity, y_velocity)
 {
 }
 
-std::pair<double, double> Object::velocity() const
+Velocity Object::velocity() const
 {
-    return std::make_pair(x_velocity, y_velocity);
+    return m_velocity;
 }
 
-std::pair<double, double> Object::coordinate() const
+Coordinate Object::coordinate() const
 {
-    return std::make_pair(x_coordinate, y_coordinate);
+    return m_coordinate;
 }
 
-std::pair<double, double> Object::acceleration() const
+Acceleration Object::acceleration() const
 {
-    return std::make_pair(x_acceleration, y_acceleration);
+    return m_acceleration;
 }
 
 void Object::tick(int time)
 {
     Force force(0, 0);
-    for (const auto& f : forces) {
-        force.first += f.first;
-        force.second += f.second;
+    for (const auto& f : m_forces) {
+        force = force + f;
     }
     // a = F / m
-    x_acceleration = force.first / mass;
-    y_acceleration = force.second / mass;
+    m_acceleration = force / m_mass;
 
     // x = Vt + ½at²
-    double x = x_velocity * time + 0.5 * x_acceleration * time * time;
-    double y = y_velocity * time + 0.5 * y_acceleration * time * time;
-
-    x_coordinate += x;
-    y_coordinate += y;
+    Displacement displacement = m_velocity * time + 0.5 * m_acceleration * time * time;
+    m_coordinate = m_coordinate + displacement;
 
     // Vt = V0 + at
-    x_velocity += x_acceleration * time;
-    y_velocity += y_acceleration * time;
+    m_velocity = m_velocity + m_acceleration * time;
+}
+
+std::pair<double, double> operator+(const std::pair<double, double>& lhs, const std::pair<double, double>& rhs)
+{
+    return std::make_pair(lhs.first + rhs.first, lhs.second + rhs.second);
+}
+std::pair<double, double> operator-(const std::pair<double, double>& lhs, const std::pair<double, double>& rhs)
+{
+    return std::make_pair(lhs.first - rhs.first, lhs.second - rhs.second);
+}
+std::pair<double, double> operator*(const std::pair<double, double>& lhs, const std::pair<double, double>& rhs)
+{
+    return std::make_pair(lhs.first * rhs.first, lhs.second * rhs.second);
+}
+std::pair<double, double> operator/(const std::pair<double, double>& lhs, const std::pair<double, double>& rhs)
+{
+    return std::make_pair(lhs.first / rhs.first, lhs.second / rhs.second);
+}
+
+std::pair<double, double> operator*(double lhs, const std::pair<double, double>& rhs)
+{
+    return std::make_pair(lhs * rhs.first, lhs * rhs.second);
+}
+std::pair<double, double> operator/(double lhs, const std::pair<double, double>& rhs)
+{
+    return std::make_pair(lhs / rhs.first, lhs / rhs.second);
+}
+
+std::pair<double, double> operator*(const std::pair<double, double>& lhs, double rhs)
+{
+    return std::make_pair(lhs.first * rhs, lhs.second * rhs);
+}
+std::pair<double, double> operator/(const std::pair<double, double>& lhs, double rhs)
+{
+    return std::make_pair(lhs.first / rhs, lhs.second / rhs);
 }
