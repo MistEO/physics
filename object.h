@@ -5,11 +5,11 @@
 
 class WholeTimer;
 
-typedef std::pair<double, double> Force;
-typedef std::pair<double, double> Coordinate;
-typedef std::pair<double, double> Velocity;
-typedef std::pair<double, double> Acceleration;
-typedef std::pair<double, double> Displacement;
+typedef std::pair<double, double> Force; // 力
+typedef std::pair<double, double> Coordinate; // 坐标
+typedef std::pair<double, double> Velocity; // 速率
+typedef std::pair<double, double> Acceleration; // 加速度
+typedef std::pair<double, double> Displacement; // 位移
 
 class Object {
     friend class WholeTimer;
@@ -17,9 +17,12 @@ class Object {
 public:
     Object(double mass, double x_coordinate, double y_coordinate, double x_velocity = 0, double y_velocity = 0);
 
+    void push_force(const Force& f);
+
     Coordinate coordinate() const;
     Velocity velocity() const;
     Acceleration acceleration() const;
+    Force sum_of_force() const;
 
     void tick(int time = 1);
 

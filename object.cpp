@@ -7,6 +7,11 @@ Object::Object(double mass, double x_coordinate, double y_coordinate, double x_v
 {
 }
 
+void Object::push_force(const Force& f)
+{
+    m_forces.push_back(f);
+}
+
 Velocity Object::velocity() const
 {
     return m_velocity;
@@ -22,14 +27,19 @@ Acceleration Object::acceleration() const
     return m_acceleration;
 }
 
+Force Object::sum_of_force() const
+{
+    Force sum(0, 0);
+    for (const auto& f : m_forces) {
+        sum = sum + f;
+    }
+    return sum;
+}
+
 void Object::tick(int time)
 {
-    Force force(0, 0);
-    for (const auto& f : m_forces) {
-        force = force + f;
-    }
     // a = F / m
-    m_acceleration = force / m_mass;
+    m_acceleration = sum_of_force() / m_mass;
 
     // x = Vt + ½at²
     Displacement displacement = m_velocity * time + 0.5 * m_acceleration * time * time;
