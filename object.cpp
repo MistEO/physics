@@ -1,47 +1,40 @@
 #include "object.h"
 
 Object::Object(double mass, Coordinate coordinate, Velocity velocity)
-    : m_mass(mass)
-    , m_coordinate(coordinate)
-    , m_velocity(velocity)
+    : mass(mass)
+    , coordinate(coordinate)
+    , velocity(velocity)
 {
-}
-
-void Object::push_force(const Force& f)
-{
-    m_forces.push_back(f);
-}
-
-double& Object::mass()
-{
-    return m_mass;
-}
-
-double& Object::elasticity()
-{
-    return m_elasticity;
-}
-
-Velocity& Object::velocity()
-{
-    return m_velocity;
-}
-
-Coordinate& Object::coordinate()
-{
-    return m_coordinate;
-}
-
-Acceleration& Object::acceleration()
-{
-    return m_acceleration;
 }
 
 Force Object::sum_of_forces() const
 {
     Force sum(0, 0);
-    for (const auto& f : m_forces) {
+    for (const auto& f : forces) {
         sum = sum + f;
     }
     return sum;
+}
+
+Coordinate Object::will_go(double time) const
+{
+    // a = F / m
+    Acceleration acceleration = sum_of_forces() / mass;
+    // x = Vt + ½at²
+    Displacement displacement = velocity * time + 0.5 * acceleration * time * time;
+
+    return coordinate + displacement;
+}
+
+void Object::tick(double time)
+{
+    // a = F / m
+    Acceleration acceleration = sum_of_forces() / mass;
+
+    // x = Vt + ½at²
+    Displacement displacement = velocity * time + 0.5 * acceleration * time * time;
+    coordinate = coordinate + displacement;
+
+    // Vt = V0 + at
+    velocity = velocity + acceleration * time;
 }

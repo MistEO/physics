@@ -11,19 +11,24 @@ int main()
 {
     Space world;
     Time::get_instance().push_space(&world);
-    world.push_boundary(Line(0, 0));
+    world.push_boundary(Boundary(BoundaryX, 0));
+    world.push_boundary(Boundary(BoundaryX, 20));
+    world.push_boundary(Boundary(BoundaryY, 0));
+    world.push_boundary(Boundary(BoundaryY, 20));
 
-    Object ball(10, Coordinate(10, 10));
-    ball.elasticity() = 0.85;
+    Object ball(1, Coordinate(0, 0), Velocity(10, 0));
+    ball.elasticity = 0.9;
+    ball.friction = 0.1;
     world.push_object(&ball);
 
-    ball.push_force(Force(0, -10));
+    ball.forces.push_back(Force(0, -9.8) * ball.mass);
 
     Time::get_instance().start();
 
     while (true) {
-        int y = ball.coordinate().second;
-        std::cout << std::string(10 - y, '\n') << "o" << std::endl;
+        int x = ball.coordinate.first;
+        int y = ball.coordinate.second;
+        std::cout << std::string(10 - y, '\n') << std::string(x, ' ') << "o" << std::endl;
         usleep(100);
         system("clear");
     }
