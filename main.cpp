@@ -11,7 +11,7 @@ int main()
 {
     Space world;
     Time::get_instance().push_space(&world);
-    world.set_boundary(Coordinate(0, 0), Coordinate(10, 10));
+    world.set_boundary(Coordinate(0, 0), Coordinate(30, 10));
 
     Object ball(1, Coordinate(0, 10), Velocity(10, 0));
     ball.elasticity = 0.9;
@@ -22,12 +22,19 @@ int main()
 
     Time::get_instance().start();
 
+    printf("\033[?25l");
+    printf("\033[2J");
+    int pre_x = 1, pre_y = 1;
     while (true) {
-        int x = ball.coordinate.first;
-        int y = ball.coordinate.second;
-        std::cout << std::string(10 - y, '\n') << std::string(x, ' ') << "o" << std::endl;
-        usleep(100);
-        system("clear");
+        Coordinate coord = ball.coordinate + Coordinate(1, 1);
+        int x = (coord.first > 0.0) ? (coord.first + 0.5) : (coord.first - 0.5);
+        int y = (coord.second > 0.0) ? (coord.second + 0.5) : (coord.second - 0.5);
+        y = 11 - y;
+        printf("\033[%d;%dH \n", pre_y, pre_x);
+        printf("\033[%d;%dHO\n", y, x);
+        pre_x = x;
+        pre_y = y;
+        usleep(10);
     }
     return 0;
 }

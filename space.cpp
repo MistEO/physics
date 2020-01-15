@@ -15,6 +15,16 @@ void Space::set_boundary(Coordinate bottomleft, Coordinate topright)
     boundary = std::make_pair(bottomleft, topright);
 }
 
+void Space::set_boundary(std::pair<Coordinate, Coordinate> boundary)
+{
+    this->boundary = boundary;
+}
+
+std::pair<Coordinate, Coordinate> Space::get_boundary() const
+{
+    return boundary;
+}
+
 void Space::tick(double time)
 {
     for (const auto& object : objects) {
@@ -62,10 +72,9 @@ void Space::tick(double time)
         }
         if (right_out) {
             will_go.first = boundary.second.first;
-        } else if (right_out) {
+        } else if (left_out) {
             will_go.first = boundary.first.first;
         }
-
         object->coordinate = will_go;
 
         // Vt = V0 + at
