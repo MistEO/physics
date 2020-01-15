@@ -12,11 +12,11 @@ class Space {
 
 public:
     void push_object(Object* object);
-    void push_boundary(const Boundary& boundary);
+    void set_boundary(Coordinate bottomleft, Coordinate topright);
 
 private:
     void tick(double time = 1.0);
 
-    std::vector<Boundary> boundaries;
     std::vector<Object*> objects;
+    std::pair<Coordinate, Coordinate> boundary;
 };

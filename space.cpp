@@ -2,7 +2,7 @@
 
 #include <cmath>
 #ifndef DOUBLE_DIFF
-#define DOUBLE_DIFF 1e-8
+#define DOUBLE_DIFF 1e-15
 #endif
 
 void Space::push_object(Object* object)
@@ -10,9 +10,9 @@ void Space::push_object(Object* object)
     objects.push_back(object);
 }
 
-void Space::push_boundary(const Boundary& boundary)
+void Space::set_boundary(Coordinate bottomleft, Coordinate topright)
 {
-    boundaries.push_back(boundary);
+    boundary = std::make_pair(bottomleft, topright);
 }
 
 void Space::tick(double time)
@@ -20,18 +20,12 @@ void Space::tick(double time)
     for (const auto& object : objects) {
 
         Coordinate will_go = object->will_go(time);
-        Boundary out_boundary(BoundaryNone, 0);
-        for (const auto& boundary : boundaries) {
-            double x0 = object->coordinate.first, y0 = object->coordinate.second,
-                   x1 = will_go.first, y1 = will_go.second;
-            // 前后两次分别在边界线两侧，则说明越界
-            if ((boundary.first == BoundaryX && (y0 - boundary.second) * (y1 - boundary.second) < DOUBLE_DIFF)
-                || (boundary.second == BoundaryY && (x0 - boundary.second) * (x1 - boundary.second) < DOUBLE_DIFF)) {
-                out_boundary = boundary;
-                break;
-            }
-        }
-        if (out_boundary.first == BoundaryNone) {
+        bool bottom_out = will_go.second <= boundary.first.second + DOUBLE_DIFF;
+        bool left_out = will_go.first <= boundary.first.first + DOUBLE_DIFF;
+        bool top_out = will_go.second >= boundary.second.second - DOUBLE_DIFF;
+        bool right_out = will_go.first >= boundary.second.first - DOUBLE_DIFF;
+        // 如果都不越界，直接走就行了
+        if (!(top_out || bottom_out || left_out || right_out)) {
             object->tick(time);
             continue;
         }
@@ -39,41 +33,48 @@ void Space::tick(double time)
         // 加速度 a = F / m
         // 摩擦力 F = u * Fn
         Force friction(0, 0);
-        if (out_boundary.first == BoundaryX) {
-            friction.first = object->friction * object->sum_of_forces().second * (object->velocity.first > 0 ? -1 : 1);
-        } else {
-            friction.second = object->friction * object->sum_of_forces().first * (object->velocity.second > 0 ? -1 : 1);
+        if (top_out || bottom_out) {
+            int sign = fabs(object->velocity.first) <= DOUBLE_DIFF ? 0 : (object->velocity.first > DOUBLE_DIFF ? 1 : -1);
+            friction.first = object->friction * object->sum_of_forces().second * sign;
         }
-        Acceleration acceleration = (object->sum_of_forces() - friction) / object->mass;
-        // 若已经贴在边界上了，切初速度为0，则不提供加速度
-        if (out_boundary.first == BoundaryX
-            && fabs(object->coordinate.second - out_boundary.second) < DOUBLE_DIFF
-            && object->velocity.second < DOUBLE_DIFF) {
+        if (left_out || right_out) {
+            int sign = fabs(object->velocity.second) <= DOUBLE_DIFF ? 0 : (object->velocity.second > DOUBLE_DIFF ? 1 : -1);
+            friction.second = object->friction * object->sum_of_forces().first * sign;
+        }
+        Acceleration acceleration = (object->sum_of_forces() + friction) / object->mass;
+        // 若已经贴在边界上了（或要出边界了），力朝边界外，则该方向上力不提供加速度
+        if ((top_out && object->sum_of_forces().second > DOUBLE_DIFF)
+            || (bottom_out && object->sum_of_forces().second < -DOUBLE_DIFF)) {
             acceleration.second = 0;
         }
-        if (out_boundary.first == BoundaryY
-            && fabs(object->coordinate.first - out_boundary.second) < DOUBLE_DIFF
-            && fabs(object->velocity.first) < DOUBLE_DIFF) {
+        if ((left_out && object->sum_of_forces().first > DOUBLE_DIFF)
+            || (right_out && object->sum_of_forces().second < -DOUBLE_DIFF)) {
             acceleration.first = 0;
         }
-
         // x = Vt + ½at²
         Displacement displacement = object->velocity * time + 0.5 * acceleration * time * time;
         will_go = object->coordinate + displacement;
 
-        if (out_boundary.first == BoundaryX) {
-            will_go.second = 0;
-        } else {
-            will_go.first = 0;
+        if (top_out) {
+            will_go.second = boundary.second.second;
+        } else if (bottom_out) {
+            will_go.second = boundary.first.second;
         }
+        if (right_out) {
+            will_go.first = boundary.second.first;
+        } else if (right_out) {
+            will_go.first = boundary.first.first;
+        }
+
         object->coordinate = will_go;
 
         // Vt = V0 + at
         object->velocity = object->velocity + acceleration * time;
         // E = ½mv²
-        if (out_boundary.first == BoundaryX) {
+        if (top_out || bottom_out) {
             object->velocity.second = -object->velocity.second * std::pow(object->elasticity, 2);
-        } else {
+        }
+        if (left_out || right_out) {
             object->velocity.first = -object->velocity.first * std::pow(object->elasticity, 2);
         }
     }

@@ -11,12 +11,9 @@ int main()
 {
     Space world;
     Time::get_instance().push_space(&world);
-    world.push_boundary(Boundary(BoundaryX, 0));
-    world.push_boundary(Boundary(BoundaryX, 20));
-    world.push_boundary(Boundary(BoundaryY, 0));
-    world.push_boundary(Boundary(BoundaryY, 20));
+    world.set_boundary(Coordinate(0, 0), Coordinate(10, 10));
 
-    Object ball(1, Coordinate(0, 0), Velocity(10, 0));
+    Object ball(1, Coordinate(0, 10), Velocity(10, 0));
     ball.elasticity = 0.9;
     ball.friction = 0.1;
     world.push_object(&ball);
