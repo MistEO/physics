@@ -5,9 +5,20 @@
 #define DOUBLE_DIFF 1e-15
 #endif
 
+Space::~Space()
+{
+    for (auto& g : gravity_vector) {
+        delete g;
+        g = nullptr;
+    }
+}
+
 void Space::push_object(Object* object)
 {
     objects.push_back(object);
+    Force* force = new Force(0, gravity * object->mass);
+    object->forces.push_back(force);
+    gravity_vector.push_back(force);
 }
 
 void Space::set_boundary(Coordinate bottomleft, Coordinate topright)
@@ -23,6 +34,11 @@ void Space::set_boundary(std::pair<Coordinate, Coordinate> boundary)
 std::pair<Coordinate, Coordinate> Space::get_boundary() const
 {
     return boundary;
+}
+
+void Space::set_gravity(double gravity)
+{
+    this->gravity = gravity;
 }
 
 void Space::tick(double time)

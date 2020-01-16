@@ -10,8 +10,11 @@ Object::Object(double mass, Coordinate coordinate, Velocity velocity)
 Force Object::sum_of_forces() const
 {
     Force sum(0, 0);
-    for (const auto& f : forces) {
-        sum = sum + f;
+    for (const auto& pf : forces) {
+        if (pf == nullptr) {
+            continue;
+        }
+        sum = sum + *pf;
     }
     return sum;
 }
