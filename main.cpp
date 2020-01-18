@@ -4,12 +4,14 @@
 
 #include "define.h"
 #include "object.h"
+#include "planet.h"
 #include "space.h"
 #include "time.h"
+#include "world.h"
 
 int main()
 {
-    Space world;
+    World world;
     Time::get_instance().push_space(&world);
     world.set_boundary(Coordinate(0, 0), Coordinate(30, 10));
     world.set_gravity(-9.8);

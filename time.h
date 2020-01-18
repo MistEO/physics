@@ -11,6 +11,7 @@ public:
     void push_space(Space* space);
     void set_proportion(double value);
     void start();
+    int ticks() const;
 
 private:
     Time() = default;
@@ -21,4 +22,5 @@ private:
     std::mutex tick_mutex;
     std::mutex time_mutex;
     double proportion = 1.0; // 现实时间与之比例
+    int ticks_count = 0;
 };

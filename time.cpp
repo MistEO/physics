@@ -17,6 +17,7 @@ void Time::tick(double time)
     for (const auto& space : spaces) {
         space->tick(time);
     }
+    ++ticks_count;
 }
 
 void Time::push_space(Space* space)
@@ -42,4 +43,9 @@ void Time::start()
         }
     });
     tick_thread.detach();
+}
+
+int Time::ticks() const
+{
+    return ticks_count;
 }

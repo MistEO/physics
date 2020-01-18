@@ -2,6 +2,8 @@
 
 #include <utility>
 
+constexpr double DOUBLE_DIFF = 1e-15;
+
 typedef std::pair<double, double> Force; // 力
 typedef std::pair<double, double> Coordinate; // 坐标
 typedef std::pair<double, double> Velocity; // 速率
