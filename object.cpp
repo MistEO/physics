@@ -7,6 +7,11 @@ Object::Object(double mass, Coordinate coordinate, Velocity velocity)
 {
 }
 
+void Object::push_force(Force* force)
+{
+    forces.push_back(force);
+}
+
 Force Object::sum_of_forces() const
 {
     Force sum(0, 0);

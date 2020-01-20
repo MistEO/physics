@@ -6,8 +6,10 @@
 World::~World()
 {
     for (auto& g : gravity_vector) {
-        delete g;
-        g = nullptr;
+        if (g != nullptr) {
+            delete g;
+            g = nullptr;
+        }
     }
 }
 
@@ -19,12 +21,12 @@ void World::set_gravity(double gravity)
 void World::push_object(Object* object)
 {
     if (object == nullptr) {
-        std::cerr << "the object is empty" << std::endl;
+        std::cerr << "the object is null" << std::endl;
         return;
     }
     objects.push_back(object);
     Force* force = new Force(0, gravity * object->mass);
-    object->forces.push_back(force);
+    object->push_force(force);
     gravity_vector.push_back(force);
 }
 
@@ -45,6 +47,10 @@ std::pair<Coordinate, Coordinate> World::get_boundary() const
 
 void World::tick_object(Object* object, double time)
 {
+    if (object == nullptr) {
+        std::cerr << "the object is null" << std::endl;
+        return;
+    }
     Coordinate will_go = object->will_go(time);
     bool bottom_out = will_go.second <= boundary.first.second + DOUBLE_DIFF;
     bool left_out = will_go.first <= boundary.first.first + DOUBLE_DIFF;
