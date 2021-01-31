@@ -2,12 +2,7 @@
 #include <string>
 #include <unistd.h>
 
-#include "define.h"
-#include "object.h"
-#include "planet.h"
-#include "space.h"
-#include "time.h"
-#include "world.h"
+#include "physics.h"
 
 int main()
 {
@@ -25,12 +20,14 @@ int main()
     Time::get_instance().start();
 
     int pre_x = 1, pre_y = 1;
-    while (true) {
+    while (true)
+    {
         Coordinate coord = ball.coordinate + Coordinate(1, 1);
         int x = (coord.first > 0.0) ? (coord.first + 0.5) : (coord.first - 0.5);
         int y = (coord.second > 0.0) ? (coord.second + 0.5) : (coord.second - 0.5);
         y = 11 - y;
-        if (pre_x == x && pre_y == y) {
+        if (pre_x == x && pre_y == y)
+        {
             usleep(10);
             continue;
         }
