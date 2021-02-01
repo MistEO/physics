@@ -1,4 +1,5 @@
 #include "space.h"
+
 #include <cmath>
 #include "object.h"
 
@@ -23,14 +24,19 @@ void Space::callback_when_ticktime()
 {
     for (auto &&[obj, coor] : _objects)
     {
-        // // a = F / m
-        // Acceleration acc = obj->sum_of_forces() / obj->mass();
+        if (obj == nullptr)
+        {
+            return;
+        }
+        
+        // a = F / m
+        Acceleration acc = obj->sum_of_forces() / obj->mass();
 
-        // // x = Vt + ½at²
-        // Displacement d = obj->velocity() * PlankTime + 0.5 * acc * std::pow(PlankTime, 2);
-        // coor = coor + d;
+        // x = Vt + ½at²
+        Displacement d = obj->velocity() * PlankTime + 0.5 * acc * std::pow(PlankTime, 2);
+        coor = coor + d;
 
-        // // Vt = V0 + at
-        // obj->velocity() = obj->velocity() + acc * PlankTime;
+        // Vt = V0 + at
+        obj->velocity() = obj->velocity() + acc * PlankTime;
     }
 }
