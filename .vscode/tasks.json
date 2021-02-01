@@ -6,7 +6,7 @@
         {
             "label": "make_debug",
             "type": "shell",
-            "command": "make debug -j5 OPT=-O0 'CXXFLAGS= -g -D_DEBUG -DDEBUG'"
+            "command": "make -j5 OPT=-O0 'CXXFLAGS= -g -D_DEBUG -DDEBUG'"
         }
     ]
 }

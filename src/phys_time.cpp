@@ -10,6 +10,15 @@ Time::Time(std::function<void(Space *)> callback_when_ticktime, Space *space_ptr
 {
 }
 
+Time::~Time()
+{
+    _tick_over = true;
+    if (_tick_thread.joinable())
+    {
+        _tick_thread.join();
+    }
+}
+
 void Time::start()
 {
     _starting = std::chrono::system_clock::now();
@@ -17,7 +26,7 @@ void Time::start()
 
 void Time::tick(Time *p_this, Space *p_space)
 {
-    while (true)
+    while (!p_this->_tick_over)
     {
         p_this->_callback_when_ticktime(p_space);
         std::this_thread::sleep_for(std::chrono::nanoseconds(PlankTime));

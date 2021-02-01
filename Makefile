@@ -25,7 +25,7 @@ $(STATIC_LIB): $(OBJS)
 	$(AR) $(ARFLAGS) $(STATIC_LIB) $(OBJS)
 
 shared: $(SHARED_LIB)
-	$(CXX) -Wall $(OPT) -std=c++17 $(CXXFLAGS) -o $(SAMPLE_OUT) $(SAMPLE_FILE) -I$(INC) $(LIBS) -L$(BUILD_DIR) -lmeojson
+	$(CXX) -Wall $(OPT) -std=c++17 $(CXXFLAGS) -o $(SAMPLE_OUT) $(SAMPLE_FILE) -I$(INC) $(LIBS) -L$(BUILD_DIR) -libmeophys
 
 $(SHARED_LIB):
 	$(CXX) -Wall $(OPT) -std=c++17 $(CXXFLAGS) -o $(SHARED_LIB) $(SRC_FILES) -I$(INC) $(LIBS) -fPIC -shared

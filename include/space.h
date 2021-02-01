@@ -18,14 +18,15 @@ namespace meophys
         virtual ~Space() = default;
 
         virtual void push_object(std::shared_ptr<Object> object, Coordinate coor);
-        virtual Time &time() { return _time; }
+        virtual Time &time() { return *_time_ptr; }
 
     protected:
-        Time _time;
-        std::function<void(Space *)> _callback_when_ticktime = space_callback_when_ticktime;
+        virtual void callback_when_ticktime();
+
+        std::unique_ptr<Time> _time_ptr = nullptr;
         std::vector<std::pair<std::shared_ptr<Object>, Acceleration>> _objects;
 
     private:
-        static void space_callback_when_ticktime(Space *p_this);
+        static void callback_this(Space *p_this);
     };
 } // namespace meophys
