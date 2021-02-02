@@ -12,6 +12,7 @@ Space::Space()
 
 void Space::emplace_object(std::shared_ptr<Object> object, Coordinate coor)
 {
+    std::unique_lock<std::shared_mutex> lock(_objs_mutex);
     _objects.emplace(std::move(object), std::move(coor));
 }
 
@@ -22,11 +23,15 @@ void Space::callback_tick(Space *p_this, double ticked_time)
 
 void Space::on_tick(double ticked_time)
 {
-    for (auto &&[obj, coor] : _objects)
+    std::shared_lock<std::shared_mutex> rdlock(_objs_mutex);
+    auto temp = _objects;
+    rdlock.unlock();
+
+    for (auto &&[obj, coor] : temp)
     {
         if (obj == nullptr)
         {
-            return;
+            continue;
         }
 
         // a = F / m
@@ -39,4 +44,6 @@ void Space::on_tick(double ticked_time)
         // Vt = V0 + at
         obj->velocity() += acc * ticked_time;
     }
+    std::unique_lock<std::shared_mutex> wrlock(_objs_mutex);
+    _objects = std::move(temp);
 }

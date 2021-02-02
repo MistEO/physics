@@ -5,18 +5,16 @@
 
 using namespace meophys;
 
-World::World()
-    : Space()
-{
-}
-
 void World::on_tick(double ticked_time)
 {
-    for (auto &&[obj, coor] : _objects)
+    std::shared_lock<std::shared_mutex> rdlock(_objs_mutex);
+    auto temp = _objects;
+    rdlock.unlock();
+    for (auto &&[obj, coor] : temp)
     {
         if (obj == nullptr)
         {
-            return;
+            continue;
         }
 
         // a = F / m
@@ -103,4 +101,6 @@ void World::on_tick(double ticked_time)
             v_x = -v_x * std::pow(obj->elasticity(), 2);
         }
     }
+    std::unique_lock<std::shared_mutex> wrlock(_objs_mutex);
+    _objects = std::move(temp);
 }

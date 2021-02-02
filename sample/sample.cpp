@@ -9,10 +9,11 @@ int main()
     using namespace meophys;
 
     World world;
-    world.set_boundary(10, 0, 0, 10);
+    world.set_boundary(10, 0, 0, 50);
 
-    auto ball = std::make_shared<Object>(1, 0.9);
+    auto ball = std::make_shared<Object>(1, 0.9, 0.9);
     ball->exert_force(Force(0, -9.8));
+    ball->velocity().first = 5;
 
     world.emplace_object(ball, Coordinate(0, 10));
 
@@ -23,7 +24,7 @@ int main()
 
     while (true)
     {
-        auto coor = world.object_coordinate(ball) + Coordinate(1, 1);
+        auto coor = world.get_coor(ball) + Coordinate(1, 1);
         int x = (coor.first > 0.0) ? (coor.first + 0.5) : (coor.first - 0.5);
         int y = (coor.second > 0.0) ? (coor.second + 0.5) : (coor.second - 0.5);
         y = 11 - y;
