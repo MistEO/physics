@@ -38,7 +38,7 @@ void World::callback_when_ticktime()
         {
             coor = will_go;
             // Vt = V0 + at
-            obj->velocity() = obj->velocity() + acc * PlankTime;
+            obj->velocity() += acc * PlankTime;
             continue;
         }
 
@@ -56,6 +56,5 @@ void World::callback_when_ticktime()
             int direction = std::fabs(v_y) <= PlanckLength ? 0 : (v_y > PlanckLength ? 1 : -1);
             friction.first = direction * obj->friction() * obj->sum_of_forces().first;
         }
-    
     }
 }

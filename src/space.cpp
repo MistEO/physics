@@ -28,15 +28,15 @@ void Space::callback_when_ticktime()
         {
             return;
         }
-        
+
         // a = F / m
         Acceleration acc = obj->sum_of_forces() / obj->mass();
 
         // x = Vt + ½at²
         Displacement d = obj->velocity() * PlankTime + 0.5 * acc * std::pow(PlankTime, 2);
-        coor = coor + d;
+        coor += d;
 
         // Vt = V0 + at
-        obj->velocity() = obj->velocity() + acc * PlankTime;
+        obj->velocity() += acc * PlankTime;
     }
 }

@@ -27,4 +27,6 @@ namespace meophys
     TwoDimensionalValue operator*(const TwoDimensionalValue &lhs, double rhs);
     TwoDimensionalValue operator/(const TwoDimensionalValue &lhs, double rhs);
 
+    TwoDimensionalValue &operator+=(TwoDimensionalValue &lhs, const TwoDimensionalValue &rhs);
+
 } // namespace meophys

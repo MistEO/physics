@@ -16,7 +16,7 @@ Force Object::sum_of_forces() const
         {
             continue;
         }
-        sum = sum + *pf;
+        sum += *pf;
     }
     return sum;
 }

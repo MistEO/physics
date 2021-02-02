@@ -36,3 +36,8 @@ TwoDimensionalValue meophys::operator/(const TwoDimensionalValue &lhs, double rh
 {
     return std::make_pair(lhs.first / rhs, lhs.second / rhs);
 }
+
+TwoDimensionalValue &meophys::operator+=(TwoDimensionalValue &lhs, const TwoDimensionalValue &rhs)
+{
+    return lhs = lhs + rhs;
+}
