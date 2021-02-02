@@ -12,10 +12,11 @@ namespace meophys
 
     class Time
     {
-        static constexpr int SleepTime = PlanckTime * 1e3;
+        static constexpr int SleepTime = PlanckTime * 1e9; // nanoseconds
+        using CallbackFunc = std::function<void(Space *, double)>;
 
     public:
-        Time(std::function<void(Space *)> on_tick, Space *space_ptr);
+        Time(CallbackFunc on_tick, Space *space_ptr);
         ~Time();
 
         void start();
@@ -24,7 +25,7 @@ namespace meophys
     private:
         static void tick(Time *p_this, Space *p_space);
         std::chrono::system_clock::time_point _starting;
-        std::function<void(Space *)> _on_tick = nullptr;
+        CallbackFunc _on_tick = nullptr;
         std::thread _tick_thread;
         std::atomic<bool> _tick_over = false;
         Space *_space_ptr;

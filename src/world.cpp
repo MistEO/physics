@@ -10,7 +10,7 @@ World::World()
 {
 }
 
-void World::on_tick()
+void World::on_tick(double ticked_time)
 {
     for (auto &&[obj, coor] : _objects)
     {
@@ -22,7 +22,7 @@ void World::on_tick()
         // a = F / m
         Acceleration acc = obj->sum_of_forces() / obj->mass();
         // x = Vt + ½at²
-        Displacement dp = obj->velocity() * PlanckTime + 0.5 * acc * std::pow(PlanckTime, 2);
+        Displacement dp = obj->velocity() * ticked_time + 0.5 * acc * std::pow(ticked_time, 2);
 
         // 算一下如果直接走，会不会穿模
         Coordinate will_go = coor + dp;
@@ -37,7 +37,7 @@ void World::on_tick()
         {
             coor = will_go;
             // Vt = V0 + at
-            obj->velocity() += acc * PlanckTime;
+            obj->velocity() += acc * ticked_time;
             continue;
         }
 
@@ -69,7 +69,7 @@ void World::on_tick()
             acc.first = 0;
         }
         // x = Vt + ½at²
-        dp = obj->velocity() * PlanckTime + 0.5 * acc * std::pow(PlanckTime, 2);
+        dp = obj->velocity() * ticked_time + 0.5 * acc * std::pow(ticked_time, 2);
         will_go = coor + dp;
 
         if (top_out)
@@ -92,7 +92,7 @@ void World::on_tick()
         coor = will_go;
 
         // Vt = V0 + at
-        obj->velocity() += acc * PlanckTime;
+        obj->velocity() += acc * ticked_time;
         // E = ½mv²
         if (top_out || bottom_out)
         {

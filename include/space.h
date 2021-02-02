@@ -26,12 +26,12 @@ namespace meophys
         virtual Time &time() { return *_time_ptr; }
 
     protected:
-        virtual void on_tick();
+        virtual void on_tick(double ticked_time);
 
         std::unique_ptr<Time> _time_ptr = nullptr;
         std::unordered_map<std::shared_ptr<Object>, Acceleration> _objects;
 
     private:
-        static void callback_this(Space *p_this);
+        static void callback_tick(Space *p_this, double ticked_time);
     };
 } // namespace meophys

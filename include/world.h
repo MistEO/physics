@@ -29,7 +29,7 @@ namespace meophys
         Boundary &boundary() { return _boundary; }
 
     protected:
-        virtual void on_tick() override;
+        virtual void on_tick(double ticked_time) override;
 
     private:
         Boundary _boundary;
