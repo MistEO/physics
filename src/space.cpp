@@ -17,10 +17,10 @@ void Space::push_object(std::shared_ptr<Object> object, Coordinate coor)
 
 void Space::callback_this(Space *p_this)
 {
-    p_this->callback_when_ticktime();
+    p_this->on_tick();
 }
 
-void Space::callback_when_ticktime()
+void Space::on_tick()
 {
     for (auto &&[obj, coor] : _objects)
     {

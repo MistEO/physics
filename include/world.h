@@ -35,7 +35,7 @@ namespace meophys
         Boundary &boundary() { return _boundary; }
 
     protected:
-        virtual void callback_when_ticktime() override;
+        virtual void on_tick() override;
 
     private:
         Boundary _boundary;

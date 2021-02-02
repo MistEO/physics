@@ -4,8 +4,8 @@
 
 using namespace meophys;
 
-Time::Time(std::function<void(Space *)> callback_when_ticktime, Space *space_ptr)
-    : _callback_when_ticktime(callback_when_ticktime),
+Time::Time(std::function<void(Space *)> on_tick, Space *space_ptr)
+    : _on_tick(on_tick),
       _tick_thread(tick, this, space_ptr)
 {
 }
@@ -28,7 +28,7 @@ void Time::tick(Time *p_this, Space *p_space)
 {
     while (!p_this->_tick_over)
     {
-        p_this->_callback_when_ticktime(p_space);
+        p_this->_on_tick(p_space);
         std::this_thread::sleep_for(std::chrono::nanoseconds(PlankTime));
     }
 }

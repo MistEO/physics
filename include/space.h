@@ -21,7 +21,7 @@ namespace meophys
         virtual Time &time() { return *_time_ptr; }
 
     protected:
-        virtual void callback_when_ticktime();
+        virtual void on_tick();
 
         std::unique_ptr<Time> _time_ptr = nullptr;
         std::vector<std::pair<std::shared_ptr<Object>, Acceleration>> _objects;

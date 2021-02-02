@@ -8,10 +8,9 @@ using namespace meophys;
 World::World()
     : Space()
 {
-    // _time_ptr = (std::make_unique<Time>(world_callback_when_ticktime, this));
 }
 
-void World::callback_when_ticktime()
+void World::on_tick()
 {
     for (auto &&[obj, coor] : _objects)
     {
