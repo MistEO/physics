@@ -20,10 +20,10 @@ namespace meophys
         virtual ~Space() = default;
 
         virtual void emplace_object(std::shared_ptr<Object> object, Coordinate coor);
-        virtual Coordinate get_coor(std::shared_ptr<Object> object)
+        virtual const Coordinate get_coor(std::shared_ptr<Object> object) const
         {
             std::shared_lock<std::shared_mutex> lock(_objs_mutex);
-            return _objects[object];
+            return _objects.at(object);
         }
         virtual void set_coor(std::shared_ptr<Object> object, Coordinate coor)
         {

@@ -4,10 +4,46 @@
 
 #include "physics.h"
 
+using namespace meophys;
+
+void world_and_ball();
+void interstellar_and_planet();
+
 int main()
 {
-    using namespace meophys;
+    interstellar_and_planet();
+    return 0;
+}
 
+void interstellar_and_planet()
+{
+    Interstellar space;
+
+    auto earth = std::make_shared<Object>(5.965e24);
+    auto month = std::make_shared<Object>(7.349e22);
+
+    space.emplace_object(earth, Coordinate(0, 0));
+    space.emplace_object(month, Coordinate(384403.9e3, 0));
+
+    printf("\033[?25l\033[2J");
+    Coordinate pre_earth(0, 0);
+    Coordinate pre_month(0, 0);
+
+    space.time().start();
+
+    while (true)
+    {
+        auto earth_coor = space.get_coor(earth) / 1e7;
+        auto month_coor = space.get_coor(month) / 1e7;
+        printf("\033[%d;%dH  \033[%d;%dHOe\n", int(pre_earth.second), int(pre_earth.first), int(earth_coor.second), int(earth_coor.first));
+        printf("\033[%d;%dH  \033[%d;%dHOm\n", int(pre_month.second), int(pre_earth.first), int(month_coor.second), int(month_coor.first));
+        pre_earth = earth_coor;
+        pre_month = earth_coor;
+    }
+}
+
+void world_and_ball()
+{
     World world;
     world.set_boundary(10, 0, 0, 50);
 
@@ -38,5 +74,4 @@ int main()
         pre_y = y;
         usleep(10);
     }
-    return 0;
 }

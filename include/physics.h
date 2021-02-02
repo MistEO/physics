@@ -1,7 +1,10 @@
 #pragma once
 
 #include "define.h"
-#include "space.h"
 #include "phys_time.h"
-#include "object.h"
+
+#include "space.h"
 #include "world.h"
+#include "interstellar.h"
+
+#include "object.h"
