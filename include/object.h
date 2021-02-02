@@ -10,9 +10,12 @@ namespace meophys
     {
     public:
         Object() = default;
+        Object(double mass, double elasticity = 1.0, double friction = 0, Velocity initial_speed = Velocity(0, 0))
+            : _mass(mass), _elasticity(elasticity), _friction(friction), _velocity(initial_speed) {}
         virtual ~Object() = default;
 
         virtual void exert_force(std::shared_ptr<Force> force);
+        virtual void exert_force(Force force);
         virtual Force sum_of_forces() const;
 
         virtual double &mass() noexcept { return _mass; }

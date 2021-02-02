@@ -19,12 +19,6 @@ namespace meophys
         World();
         virtual ~World() = default;
 
-        virtual void push_object(std::shared_ptr<Object> object, Coordinate coor) override
-        {
-            return Space::push_object(object, coor);
-        }
-        virtual Time &time() override { return Space::time(); }
-
         void set_boundary(int top, int left, int bottom, int right)
         {
             _boundary.top = top;

@@ -10,9 +10,9 @@ Space::Space()
 {
 }
 
-void Space::push_object(std::shared_ptr<Object> object, Coordinate coor)
+void Space::emplace_object(std::shared_ptr<Object> object, Coordinate coor)
 {
-    _objects.emplace_back(std::make_pair(std::move(object), std::move(coor)));
+    _objects.emplace(std::move(object), std::move(coor));
 }
 
 void Space::callback_this(Space *p_this)
@@ -33,10 +33,10 @@ void Space::on_tick()
         Acceleration acc = obj->sum_of_forces() / obj->mass();
 
         // x = Vt + ½at²
-        Displacement d = obj->velocity() * PlankTime + 0.5 * acc * std::pow(PlankTime, 2);
+        Displacement d = obj->velocity() * PlanckTime + 0.5 * acc * std::pow(PlanckTime, 2);
         coor += d;
 
         // Vt = V0 + at
-        obj->velocity() += acc * PlankTime;
+        obj->velocity() += acc * PlanckTime;
     }
 }

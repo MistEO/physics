@@ -22,7 +22,7 @@ void World::on_tick()
         // a = F / m
         Acceleration acc = obj->sum_of_forces() / obj->mass();
         // x = Vt + ½at²
-        Displacement dp = obj->velocity() * PlankTime + 0.5 * acc * std::pow(PlankTime, 2);
+        Displacement dp = obj->velocity() * PlanckTime + 0.5 * acc * std::pow(PlanckTime, 2);
 
         // 算一下如果直接走，会不会穿模
         Coordinate will_go = coor + dp;
@@ -37,7 +37,7 @@ void World::on_tick()
         {
             coor = will_go;
             // Vt = V0 + at
-            obj->velocity() += acc * PlankTime;
+            obj->velocity() += acc * PlanckTime;
             continue;
         }
 
@@ -54,6 +54,53 @@ void World::on_tick()
         {
             int direction = std::fabs(v_y) <= PlanckLength ? 0 : (v_y > PlanckLength ? 1 : -1);
             friction.first = direction * obj->friction() * obj->sum_of_forces().first;
+        }
+
+        acc = (obj->sum_of_forces() + friction) / obj->mass();
+        // 若已经贴在边界上了（或即将穿模），且力朝边界外；则该方向上不提供加速度
+        if ((top_out && obj->sum_of_forces().second > PlanckLength) ||
+            (bottom_out && obj->sum_of_forces().second < -PlanckLength))
+        {
+            acc.second = 0;
+        }
+        if ((left_out && obj->sum_of_forces().first > PlanckLength) ||
+            (right_out && obj->sum_of_forces().first < -PlanckLength))
+        {
+            acc.first = 0;
+        }
+        // x = Vt + ½at²
+        dp = obj->velocity() * PlanckTime + 0.5 * acc * std::pow(PlanckTime, 2);
+        will_go = coor + dp;
+
+        if (top_out)
+        {
+            will_go_y = _boundary.top;
+        }
+        else if (bottom_out)
+        {
+            will_go_y = _boundary.bottom;
+        }
+
+        if (right_out)
+        {
+            will_go_x = _boundary.right;
+        }
+        else if (left_out)
+        {
+            will_go_x = _boundary.left;
+        }
+        coor = will_go;
+
+        // Vt = V0 + at
+        obj->velocity() += acc * PlanckTime;
+        // E = ½mv²
+        if (top_out || bottom_out)
+        {
+            v_y = -v_y * std::pow(obj->elasticity(), 2);
+        }
+        if (left_out || right_out)
+        {
+            v_x = -v_x * std::pow(obj->elasticity(), 2);
         }
     }
 }

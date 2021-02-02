@@ -9,36 +9,33 @@ int main()
     using namespace meophys;
 
     World world;
+    world.set_boundary(10, 0, 0, 10);
 
-    // World world;
-    // Time::get_instance().push_space(&world);
-    // world.set_boundary(Coordinate(0, 0), Coordinate(30, 10));
-    // world.set_gravity(-9.8);
+    auto ball = std::make_shared<Object>(1, 0.9);
+    ball->exert_force(Force(0, -9.8));
 
-    // Object ball(100, Coordinate(0, 10), Velocity(10, 0));
-    // world.push_object(&ball);
-    // ball.elasticity = 0.5;
-    // ball.friction = 0.1;
+    world.emplace_object(ball, Coordinate(0, 10));
 
-    // printf("\033[?25l\033[2J");
-    // Time::get_instance().start();
+    printf("\033[?25l\033[2J");
+    int pre_x = 1, pre_y = 1;
 
-    // int pre_x = 1, pre_y = 1;
-    // while (true)
-    // {
-    //     Coordinate coord = ball.coordinate + Coordinate(1, 1);
-    //     int x = (coord.first > 0.0) ? (coord.first + 0.5) : (coord.first - 0.5);
-    //     int y = (coord.second > 0.0) ? (coord.second + 0.5) : (coord.second - 0.5);
-    //     y = 11 - y;
-    //     if (pre_x == x && pre_y == y)
-    //     {
-    //         usleep(10);
-    //         continue;
-    //     }
-    //     printf("\033[%d;%dH \033[%d;%dHO\n", pre_y, pre_x, y, x);
-    //     pre_x = x;
-    //     pre_y = y;
-    //     usleep(10);
-    // }
+    world.time().start();
+
+    while (true)
+    {
+        auto coor = world.object_coordinate(ball) + Coordinate(1, 1);
+        int x = (coor.first > 0.0) ? (coor.first + 0.5) : (coor.first - 0.5);
+        int y = (coor.second > 0.0) ? (coor.second + 0.5) : (coor.second - 0.5);
+        y = 11 - y;
+        if (pre_x == x && pre_y == y)
+        {
+            usleep(10);
+            continue;
+        }
+        printf("\033[%d;%dH \033[%d;%dHO\n", pre_y, pre_x, y, x);
+        pre_x = x;
+        pre_y = y;
+        usleep(10);
+    }
     return 0;
 }

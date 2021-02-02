@@ -4,8 +4,8 @@
 
 namespace meophys
 {
-    constexpr double PlanckLength = 1e-15;
-    constexpr int PlankTime = 100; // nanoseconds
+    static constexpr double PlanckLength = 1e-15;
+    static constexpr double PlanckTime = 1e-3; // seconds
 
     using TwoDimensionalValue = std::pair<double, double>; // 二维量
 

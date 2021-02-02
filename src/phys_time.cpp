@@ -6,7 +6,7 @@ using namespace meophys;
 
 Time::Time(std::function<void(Space *)> on_tick, Space *space_ptr)
     : _on_tick(on_tick),
-      _tick_thread(tick, this, space_ptr)
+      _space_ptr(space_ptr)
 {
 }
 
@@ -22,6 +22,12 @@ Time::~Time()
 void Time::start()
 {
     _starting = std::chrono::system_clock::now();
+    _tick_thread = std::thread(tick, this, _space_ptr);
+}
+
+void Time::pause()
+{
+    // TODO
 }
 
 void Time::tick(Time *p_this, Space *p_space)
@@ -29,6 +35,6 @@ void Time::tick(Time *p_this, Space *p_space)
     while (!p_this->_tick_over)
     {
         p_this->_on_tick(p_space);
-        std::this_thread::sleep_for(std::chrono::nanoseconds(PlankTime));
+        std::this_thread::sleep_for(std::chrono::milliseconds(SleepTime));
     }
 }
