@@ -12,7 +12,8 @@ namespace meophys
 
     class Time
     {
-        static constexpr int SleepTime = PlanckTime * 1e9; // nanoseconds
+        static constexpr double PlanckTime = 1e-3;  // seconds
+        static constexpr int ProcessInterval = 1e6; // nanoseconds
         using CallbackFunc = std::function<void(Space *, double)>;
 
     public:
@@ -21,6 +22,7 @@ namespace meophys
 
         void start();
         void pause();
+        double &timeflow() noexcept { return _timeflow; }
 
     private:
         static void tick(Time *p_this, Space *p_space);
@@ -29,5 +31,6 @@ namespace meophys
         std::thread _tick_thread;
         std::atomic<bool> _tick_over = false;
         Space *_space_ptr;
+        double _timeflow = 1.0;
     };
 } // namespace meophys

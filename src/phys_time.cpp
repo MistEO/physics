@@ -34,7 +34,7 @@ void Time::tick(Time *p_this, Space *p_space)
 {
     while (!p_this->_tick_over)
     {
-        p_this->_on_tick(p_space, PlanckTime);
-        std::this_thread::sleep_for(std::chrono::nanoseconds(SleepTime));
+        p_this->_on_tick(p_space, PlanckTime * p_this->_timeflow);
+        std::this_thread::sleep_for(std::chrono::nanoseconds(ProcessInterval));
     }
 }

@@ -30,9 +30,9 @@ void Interstellar::on_tick(double ticked_time)
             {
                 // 相撞的情况，TODO
             }
-            // F = GMm/r²   universal gravitation
+            // The universal gravitation, F = GMm/r²
             double r2 = std::pow(coor.first - pre_coor.first, 2) + std::pow(coor.second - pre_coor.second, 2);
-            double f_value = Gravitation * obj->mass() * pre_obj->mass() * r2;
+            double f_value = Gravitation * obj->mass() * pre_obj->mass() / r2;
 
             double r = std::sqrt(r2);
             double f_x = (pre_coor.first - coor.first) * f_value / r;
