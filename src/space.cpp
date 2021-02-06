@@ -5,20 +5,13 @@
 
 using namespace meophys;
 
-Space::Space()
-    : _time_ptr(std::make_unique<Time>(callback_tick, this))
+std::shared_ptr<Object> Space::emplace_object(Object object, Coordinate coor)
 {
-}
-
-void Space::emplace_object(std::shared_ptr<Object> object, Coordinate coor)
-{
+    std::shared_ptr<Object> ptr = std::make_shared<Object>(std::move(object));
     std::unique_lock<std::shared_mutex> lock(_objs_mutex);
-    _objects.emplace(std::move(object), std::move(coor));
-}
-
-void Space::callback_tick(Space *p_this, double ticked_time)
-{
-    p_this->on_tick(ticked_time);
+    _objects.emplace(ptr, std::move(coor));
+    lock.unlock();
+    return ptr;
 }
 
 void Space::on_tick(double ticked_time)

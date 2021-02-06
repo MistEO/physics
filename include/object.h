@@ -13,6 +13,8 @@ namespace meophys
         Object() = default;
         Object(std::string name, long double mass, double elasticity = 1.0, double friction = 0, Velocity initial_speed = Velocity(0, 0))
             : _name(std::move(name)), _mass(mass), _elasticity(elasticity), _friction(friction), _velocity(initial_speed) {}
+        Object(const Object &) = default;
+        Object(Object &&) = default;
         virtual ~Object() = default;
 
         virtual void exert_force(std::shared_ptr<Force> force);
@@ -24,6 +26,9 @@ namespace meophys
         virtual double &elasticity() noexcept { return _elasticity; }
         virtual double &friction() noexcept { return _friction; }
         virtual Velocity &velocity() noexcept { return _velocity; }
+
+        Object &operator=(const Object &) = default;
+        Object &operator=(Object &&) = default;
 
     protected:
         std::string _name;

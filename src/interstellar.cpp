@@ -20,23 +20,22 @@ void Interstellar::on_tick(double ticked_time)
         }
 
         Force gravitation(0, 0);
-        for (auto &&[pre_obj, pre_coor] : pre_objects)
+        auto &&[c_x, c_y] = coor;
+        for (auto &&[anohter_obj, anohter_coor] : pre_objects)
         {
-            if (obj == pre_obj)
+            if (obj == anohter_obj)
             {
                 continue;
             }
-            if (coor == pre_coor)
-            {
-                // 相撞的情况，TODO
-            }
+            auto &&[another_c_x, another_c_y] = anohter_coor;
+
             // The universal gravitation, F = GMm/r²
-            double r2 = std::pow(coor.first - pre_coor.first, 2) + std::pow(coor.second - pre_coor.second, 2);
-            double f_value = Gravitation * obj->mass() * pre_obj->mass() / r2;
+            double r2 = std::pow(c_x - another_c_x, 2) + std::pow(c_y - another_c_y, 2);
+            double f_value = Gravitation * obj->mass() * anohter_obj->mass() / r2;
 
             double r = std::sqrt(r2);
-            double f_x = (pre_coor.first - coor.first) * f_value / r;
-            double f_y = (pre_coor.second - coor.second) * f_value / r;
+            double f_x = (another_c_x - c_x) * f_value / r;
+            double f_y = (another_c_y - c_y) * f_value / r;
             gravitation += Force(f_x, f_y);
         }
 
