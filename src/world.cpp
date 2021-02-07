@@ -41,6 +41,7 @@ void World::on_tick(double ticked_time)
 
         // 加速度 a = F / m
         // 摩擦力 F = u * Fn
+        // TODO: 摩擦力计算错误
         auto &&[v_x, v_y] = obj->velocity();
         Force friction(0, 0);
         if (top_out || bottom_out)

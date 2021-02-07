@@ -4,8 +4,10 @@
 #include <functional>
 #include <thread>
 #include <atomic>
+#include <mutex>
+#include <shared_mutex>
+#include <condition_variable>
 #include "define.h"
-#include <float.h>
 
 namespace meophys
 {
@@ -22,23 +24,35 @@ namespace meophys
         ~Time();
 
         void start();
+        void stop();
         void pause();
-        double &timeflow() noexcept { return _timeflow; }
+        void resume();
+        std::atomic<double> &timeflow() noexcept { return _timeflow; }
 
-        template <typename T>
-        std::chrono::duration<int64_t, T> elapsed() const
+        template <typename Period>
+        std::chrono::duration<int64_t, Period> elapsed() const
         {
-            return std::chrono::duration_cast<std::chrono::duration<int64_t, T>>(_elapsed);
+            static_assert(std::chrono::__is_ratio<Period>::value,
+                          "period must be a specialization of ratio");
+            static_assert(Period::num > 0, "period must be positive");
+
+            std::shared_lock<std::shared_mutex> lock(_elapsed_mutex);
+            return std::chrono::duration_cast<std::chrono::duration<int64_t, Period>>(_elapsed);
         }
 
     private:
         static void tick(Time *p_this, Space *p_space);
-        std::chrono::system_clock::time_point _starting;
-        std::chrono::nanoseconds _elapsed;
         CallbackFunc _on_tick = nullptr;
+        Space *_space_ptr = nullptr;
+        std::atomic<double> _timeflow = 1.0;
+
+        std::chrono::nanoseconds _elapsed;
+        mutable std::shared_mutex _elapsed_mutex;
         std::thread _tick_thread;
-        std::atomic<bool> _tick_over = false;
-        Space *_space_ptr;
-        double _timeflow = 1.0;
+        mutable std::mutex _start_mutex;
+        std::atomic<bool> _stop = false;
+        mutable std::mutex _pause_mutex;
+        mutable std::condition_variable _pause_cv;
+        std::atomic<bool> _pause = false;
     };
 } // namespace meophys

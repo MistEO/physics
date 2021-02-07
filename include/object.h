@@ -37,5 +37,6 @@ namespace meophys
         double _friction = 0;                        // 摩擦系数
         Velocity _velocity;                          // 速率
         std::vector<std::shared_ptr<Force>> _forces; // 所受的力
+        // TODO: 物体面积
     };
 } // namespace meophys
