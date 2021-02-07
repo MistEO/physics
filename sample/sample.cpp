@@ -12,7 +12,8 @@ void interstellar_and_planet();
 
 int main()
 {
-    interstellar_and_planet();
+    world_and_ball();
+    // interstellar_and_planet();
     return 0;
 }
 
@@ -23,7 +24,7 @@ void interstellar_and_planet()
     //auto sun = std::make_shared<Object>("Sun", 1.989e30);
     auto earth = std::make_shared<Object>("Earth", 5.965e24);
     auto month = std::make_shared<Object>("Month", 7.349e22);
-    month->velocity().second = 1.023e3;
+    month->set_velocity(Velocity(0, 1.023e3));
 
     //space.emplace_object(sun, Coordinate(0, 0));
     space.emplace_object(earth, Coordinate(0, 0));
@@ -73,11 +74,11 @@ void interstellar_and_planet()
 void world_and_ball()
 {
     World world;
-    world.set_boundary(10, 0, 0, 50);
+    world.set_boundary(10, 0, 0, 30);
 
     auto ball = std::make_shared<Object>("Ball", 1, 0.9, 0.9);
     ball->exert_force(Force(0, -9.8));
-    ball->velocity().first = 5;
+    ball->set_velocity(Velocity(5, 0));
 
     world.emplace_object(ball, Coordinate(0, 10));
 

@@ -37,7 +37,7 @@ namespace meophys
         virtual void set_coor(std::shared_ptr<Object> object, Coordinate coor)
         {
             std::unique_lock<std::shared_mutex> lock(_objs_mutex);
-            _objects[object] = coor;
+            _objects[object] = std::move(coor);
         }
 
         virtual Time &time() { return *_time_ptr; }

@@ -20,7 +20,7 @@ void World::on_tick(double ticked_time)
         // a = F / m
         Acceleration acc = obj->sum_of_forces() / obj->mass();
         // x = Vt + ½at²
-        Displacement dp = obj->velocity() * ticked_time + 0.5 * acc * std::pow(ticked_time, 2);
+        Displacement dp = obj->get_velocity() * ticked_time + 0.5 * acc * std::pow(ticked_time, 2);
 
         // 算一下如果直接走，会不会穿模
         Coordinate will_go = coor + dp;
@@ -35,14 +35,14 @@ void World::on_tick(double ticked_time)
         {
             coor = will_go;
             // Vt = V0 + at
-            obj->velocity() += acc * ticked_time;
+            obj->set_velocity(obj->get_velocity() + acc * ticked_time);
             continue;
         }
 
         // 加速度 a = F / m
         // 摩擦力 F = u * Fn
         // TODO: 摩擦力计算错误
-        auto &&[v_x, v_y] = obj->velocity();
+        auto &&[v_x, v_y] = obj->get_velocity();
         Force friction(0, 0);
         if (top_out || bottom_out)
         {
@@ -68,7 +68,7 @@ void World::on_tick(double ticked_time)
             acc.first = 0;
         }
         // x = Vt + ½at²
-        dp = obj->velocity() * ticked_time + 0.5 * acc * std::pow(ticked_time, 2);
+        dp = obj->get_velocity() * ticked_time + 0.5 * acc * std::pow(ticked_time, 2);
         will_go = coor + dp;
 
         if (top_out)
@@ -91,15 +91,18 @@ void World::on_tick(double ticked_time)
         coor = will_go;
 
         // Vt = V0 + at
-        obj->velocity() += acc * ticked_time;
+        obj->set_velocity(obj->get_velocity() + acc * ticked_time);
+
         // E = ½mv²
         if (top_out || bottom_out)
         {
-            v_y = -v_y * std::pow(obj->elasticity(), 2);
+            double new_v_y = -v_y * std::pow(obj->elasticity(), 2);
+            obj->set_velocity(Velocity(v_x, new_v_y));
         }
         if (left_out || right_out)
         {
-            v_x = -v_x * std::pow(obj->elasticity(), 2);
+            double new_v_x = -v_x * std::pow(obj->elasticity(), 2);
+            obj->set_velocity(Velocity(new_v_x, v_y));
         }
     }
     std::unique_lock<std::shared_mutex> wrlock(_objs_mutex);

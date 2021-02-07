@@ -31,11 +31,11 @@ void Space::on_tick(double ticked_time)
         Acceleration acc = obj->sum_of_forces() / obj->mass();
 
         // x = Vt + ½at²
-        Displacement d = obj->velocity() * ticked_time + 0.5 * acc * std::pow(ticked_time, 2);
+        Displacement d = obj->get_velocity() * ticked_time + 0.5 * acc * std::pow(ticked_time, 2);
         coor += d;
 
         // Vt = V0 + at
-        obj->velocity() += acc * ticked_time;
+        obj->set_velocity(obj->get_velocity() + acc * ticked_time);
     }
     std::unique_lock<std::shared_mutex> wrlock(_objs_mutex);
     _objects = std::move(temp_objects);
