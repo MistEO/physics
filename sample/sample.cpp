@@ -45,6 +45,8 @@ void interstellar_and_planet()
         int month_x = static_cast<int>(std::round(month_doublex));
         int month_y = static_cast<int>(std::round(month_doubley / 2));
 
+        auto elapsed = space.time().elapsed<std::ratio<3600 * 24>>().count();
+
         if (earth_x == earth_pre_x && earth_y == earth_pre_y &&
             month_x == month_pre_x && month_pre_y == earth_pre_y)
         {
@@ -52,9 +54,12 @@ void interstellar_and_planet()
             continue;
         }
 
-        printf("\033[%d;%dH \033[%d;%dHO\033[%d;%dH \033[%d;%dHO\n",
-               earth_pre_y, earth_pre_x, earth_y, earth_x,
-               month_pre_y, month_pre_x, month_y, month_x);
+        printf(
+            "\033[0;0Helapsed: %ld days\033[%d;%dH \033[%d;%dHO\033[%d;%dH \033[%d;%dHO\n",
+            elapsed,
+            earth_pre_y,
+            earth_pre_x, earth_y, earth_x,
+            month_pre_y, month_pre_x, month_y, month_x);
 
         earth_pre_x = earth_x;
         earth_pre_y = earth_y;

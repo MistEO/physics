@@ -21,7 +21,6 @@ Time::~Time()
 
 void Time::start()
 {
-    _starting = std::chrono::system_clock::now();
     _tick_thread = std::thread(tick, this, _space_ptr);
 }
 
@@ -32,9 +31,13 @@ void Time::pause()
 
 void Time::tick(Time *p_this, Space *p_space)
 {
+    p_this->_starting = std::chrono::system_clock::now();
     while (!p_this->_tick_over)
     {
-        p_this->_on_tick(p_space, PlanckTime * p_this->_timeflow);
-        std::this_thread::sleep_for(std::chrono::nanoseconds(ProcessInterval));
+        auto start_time = std::chrono::system_clock::now();
+        auto tick_time = PlanckTime * p_this->_timeflow; // seconds
+        p_this->_on_tick(p_space, tick_time);
+        p_this->_elapsed += std::chrono::nanoseconds(static_cast<int64_t>(tick_time * 1e9));
+        std::this_thread::sleep_until(start_time + std::chrono::nanoseconds(ProcessInterval));
     }
 }

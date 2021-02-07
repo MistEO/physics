@@ -5,6 +5,7 @@
 #include <thread>
 #include <atomic>
 #include "define.h"
+#include <float.h>
 
 namespace meophys
 {
@@ -24,9 +25,16 @@ namespace meophys
         void pause();
         double &timeflow() noexcept { return _timeflow; }
 
+        template <typename T>
+        std::chrono::duration<int64_t, T> elapsed() const
+        {
+            return std::chrono::duration_cast<std::chrono::duration<int64_t, T>>(_elapsed);
+        }
+
     private:
         static void tick(Time *p_this, Space *p_space);
         std::chrono::system_clock::time_point _starting;
+        std::chrono::nanoseconds _elapsed;
         CallbackFunc _on_tick = nullptr;
         std::thread _tick_thread;
         std::atomic<bool> _tick_over = false;
