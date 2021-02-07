@@ -12,12 +12,10 @@ namespace meophys
     {
     public:
         Object() = delete;
-        Object(std::string name, long double mass, double elasticity = 1.0, double friction = 0, Velocity initial_speed = Velocity(0, 0))
-            : _name(std::move(name)), _mass(mass), _elasticity(elasticity), _friction(friction), _velocity(initial_speed) {}
-        Object(const Object &obj)
-            : _name(obj._name), _mass(obj._mass), _elasticity(obj._elasticity), _friction(obj._friction), _velocity(obj._velocity) {}
-        Object(Object &&obj)
-            : _name(std::move(obj._name)), _mass(std::move(obj._mass)), _elasticity(std::move(obj._elasticity)), _friction(std::move(obj._friction)), _velocity(std::move(obj._velocity)) {}
+        Object(std::string name, long double mass, double elasticity = 1.0, double friction = 0);
+        Object(const Object &obj);
+        Object(Object &&obj);
+
         virtual ~Object() = default;
 
         virtual void exert_force(std::shared_ptr<Force> force_ptr);
@@ -25,9 +23,10 @@ namespace meophys
         virtual Force sum_of_forces() const;
 
         virtual const std::string &name() const noexcept { return _name; }
-        virtual const long double &mass() const noexcept { return _mass; }
-        virtual const double &elasticity() const noexcept { return _elasticity; }
-        virtual const double &friction() const noexcept { return _friction; }
+        virtual long double &mass() noexcept { return _mass; }
+        virtual double &elasticity() noexcept { return _elasticity; }
+        virtual double &friction() noexcept { return _friction; }
+
         virtual const Velocity get_velocity() const
         {
             std::shared_lock<std::shared_mutex> lock(_velocity_mutex);
@@ -39,15 +38,15 @@ namespace meophys
             _velocity = std::move(velocity);
         }
 
-        Object &operator=(const Object &) = delete;
-        Object &operator=(Object &&) = delete;
+        Object &operator=(const Object &rhs);
+        Object &operator=(Object &&rhs);
 
     protected:
-        const std::string _name;        // 名字，无实际作用
-        const long double _mass = 1.0;  // 质量
-        const double _elasticity = 1.0; // 弹性系数
-        const double _friction = 0;     // 摩擦系数
-        Velocity _velocity;             // 速率
+        std::string _name;        // 名字，无实际作用
+        long double _mass = 1.0;  // 质量
+        double _elasticity = 1.0; // 弹性系数
+        double _friction = 0;     // 摩擦系数
+        Velocity _velocity;       // 速率
         mutable std::shared_mutex _velocity_mutex;
         std::vector<std::shared_ptr<Force>> _forces; // 所受的力
         mutable std::shared_mutex _force_mutex;
