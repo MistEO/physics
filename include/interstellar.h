@@ -7,7 +7,7 @@ namespace meophys
 {
     class Interstellar : public Space
     {
-        static constexpr double Gravitation = 6.67e-11;
+        static constexpr double GravitationConstant = 6.67259e-11;
 
     public:
         Interstellar() = default;

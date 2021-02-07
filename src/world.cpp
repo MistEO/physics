@@ -8,9 +8,9 @@ using namespace meophys;
 void World::on_tick(double ticked_time)
 {
     std::shared_lock<std::shared_mutex> rdlock(_objs_mutex);
-    auto temp = _objects;
+    auto temp_objects = _objects;
     rdlock.unlock();
-    for (auto &&[obj, coor] : temp)
+    for (auto &&[obj, coor] : temp_objects)
     {
         if (obj == nullptr)
         {
@@ -102,5 +102,5 @@ void World::on_tick(double ticked_time)
         }
     }
     std::unique_lock<std::shared_mutex> wrlock(_objs_mutex);
-    _objects = std::move(temp);
+    _objects = std::move(temp_objects);
 }
