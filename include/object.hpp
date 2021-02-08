@@ -15,13 +15,13 @@ namespace meophys
         Object()
         {
             std::unique_lock<std::mutex> lock(_id_mutex);
-            _unique_id = _ref_id++;
+            _unique_id = get_ref_id();
         }
         Object(std::string name, long double mass) : _name(std::move(name)), _mass(mass)
         {
             {
                 std::unique_lock<std::mutex> lock(_id_mutex);
-                _unique_id = _ref_id++;
+                _unique_id = get_ref_id();
             }
             if (mass <= 0)
                 throw std::invalid_argument("mass must be positive");
@@ -46,7 +46,7 @@ namespace meophys
         {
             {
                 std::unique_lock<std::mutex> lock(_id_mutex);
-                _unique_id = _ref_id++;
+                _unique_id = get_ref_id();
             }
             _name = rhs._name + "_copy";
             _mass = rhs._mass;
@@ -72,8 +72,12 @@ namespace meophys
         }
 
     protected:
+        static const int get_ref_id()
+        {
+            static int ref_id = 0;
+            return ++ref_id;
+        }
         std::mutex _id_mutex;
-        static std::atomic_int _ref_id;
         int _unique_id;           // 唯一id，用于判断相等，计算hash值等
         std::string _name;        // 名字，无实际作用
         long double _mass = 1.0;  // 质量，单位kg
@@ -81,8 +85,6 @@ namespace meophys
         double _elasticity = 1.0; // 弹性系数
         double _friction = 0;     // 摩擦系数
     };
-
-    std::atomic_int Object::_ref_id = 0;
 
 } // namespace meophys
 
