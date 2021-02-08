@@ -10,7 +10,7 @@ using namespace meophys;
 
 void world_and_ball();
 void interstellar_and_planet();
-void print_loop(const Space *space, std::vector<std::shared_ptr<Object>> &&objects, double scale = 1.0);
+void print_loop(std::vector<std::unordered_map<meophys::Object, meophys::ObjectStatus>::iterator> &&objects, double scale = 1.0);
 
 int main()
 {
@@ -23,19 +23,13 @@ void interstellar_and_planet()
 {
     Interstellar space;
 
-    //auto sun = std::make_shared<Object>("Sun", 1.989e30);
-    auto earth = std::make_shared<Object>("Earth", 5.965e24);
-    auto month = std::make_shared<Object>("Month", 7.349e22);
-    month->set_velocity(0, 1.023e3);
-
-    //space.emplace_object(sun, Coordinate(0, 0));
-    space.emplace_object(earth, Coordinate(0, 0));
-    space.emplace_object(month, Coordinate(384403.9e3, 0));
+    auto earth = space.emplace_object(Object("Earth", 5.965e24), Coordinate(0, 0));
+    auto month = space.emplace_object(Object("Month", 7.349e22), Coordinate(384403.9e3, 0), Velocity(0, 1.023e3));
 
     space.time().timeflow() = 1000000;
     space.time().start();
 
-    print_loop(&space, {earth, month}, 1e-8);
+    print_loop({earth, month}, 1e-8);
 }
 
 void world_and_ball()
@@ -43,27 +37,25 @@ void world_and_ball()
     World world;
     world.set_boundary(11, -10, 0, 50);
 
-    auto ball = std::make_shared<Object>("Ball", 1);
-    ball->elasticity() = 0.9;
-    ball->friction() = 0.5;
-    ball->exert_force(Force(0, -9.8));
-    ball->set_velocity(5, 0);
+    Object ball("Ball", 1);
+    ball.elasticity() = 0.9;
+    ball.friction() = 0.5;
+    ObjectStatus ball_status(Coordinate(1, 10), Velocity(5, 0), {Force(0, -9.8)});
 
-    auto ball_2 = std::make_shared<Object>("Ball2", 1);
-    ball_2->elasticity() = 0.9;
-    ball_2->friction() = 0.5;
-    ball_2->exert_force(Force(0, -9.8));
-    ball_2->set_velocity(-5, 0);
+    Object ball_2("Ball2", 1);
+    ball_2.elasticity() = 0.9;
+    ball_2.friction() = 0.5;
+    ObjectStatus ball_2_status(Coordinate(20, 10), Velocity(-5, 0), {Force(0, -9.8)});
 
-    world.emplace_object(ball, Coordinate(1, 10));
-    world.emplace_object(ball_2, Coordinate(20, 10));
+    auto ball_iter = world.emplace_object(std::move(ball), std::move(ball_status));
+    auto ball_2_iter = world.emplace_object(std::move(ball_2), std::move(ball_2_status));
 
     world.time().start();
 
-    print_loop(&world, {ball, ball_2});
+    print_loop({ball_iter, ball_2_iter});
 }
 
-void print_loop(const Space *space, std::vector<std::shared_ptr<Object>> &&objects, double scale)
+void print_loop(std::vector<std::unordered_map<meophys::Object, meophys::ObjectStatus>::iterator> &&objects, double scale)
 {
     printf("\033[?25l\033[2J");
 
@@ -75,21 +67,21 @@ void print_loop(const Space *space, std::vector<std::shared_ptr<Object>> &&objec
     {
         for (size_t i = 0; i != objects.size(); ++i)
         {
-            auto &&[doublex, doubley] = space->get_coor(objects[i]) * scale;
+            auto &&[doublex, doubley] = objects[i]->second.coordinate() * scale;
             int x = static_cast<int>(std::round(doublex)) + 30;
             int y = -static_cast<int>(std::round(doubley / 2.0)) + 10;
 
             auto &&[pre_x, pre_y] = pre_coor[i];
             if (pre_x == x && pre_y == y)
             {
-                usleep(10);
                 continue;
             }
-            printf("\033[%d;%dH \033[%d;%dHO\n", pre_y, pre_x, y, x);
+            printf("\033[%d;%dH \033[%d;%dHO", pre_y, pre_x, y, x);
 
             pre_x = x;
             pre_y = y;
         }
-        usleep(10);
+        printf("\n");
+        usleep(1000 * 100);
     }
 }

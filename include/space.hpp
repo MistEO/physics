@@ -1,6 +1,5 @@
 #pragma once
 
-#include <memory>
 #include <unordered_map>
 #include <shared_mutex>
 
@@ -19,10 +18,16 @@ namespace meophys
         virtual ~Space() = default;
 
         virtual std::unordered_map<Object, ObjectStatus>::iterator
-        emplace_object(Object object, Coordinate coor)
+        emplace_object(Object object, ObjectStatus status)
         {
             std::unique_lock<std::shared_mutex> lock(_objs_mutex);
-            return _objects.emplace(std::move(object), std::move(coor)).first;
+            return _objects.emplace(std::move(object), std::move(status)).first;
+        }
+        virtual std::unordered_map<Object, ObjectStatus>::iterator
+        emplace_object(Object object, Coordinate coordinate, Velocity velocity = Velocity(0, 0), std::vector<Force> forces = std::vector<Force>())
+        {
+            std::unique_lock<std::shared_mutex> lock(_objs_mutex);
+            return _objects.emplace(std::move(object), ObjectStatus(coordinate, velocity, forces)).first;
         }
 
         virtual Time &time() { return *_time_ptr; }

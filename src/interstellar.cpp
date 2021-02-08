@@ -1,7 +1,7 @@
 #include "interstellar.h"
 
 #include <cmath>
-#include "object.h"
+#include "object.hpp"
 
 #ifdef ENABLE_CACHE
 #include <map>
@@ -23,18 +23,13 @@ void Interstellar::on_tick(double ticked_time)
     std::map<objptr_pair, Force> cache;
 #endif
 
-    for (auto &&[obj, coor] : temp_objects)
+    for (auto &&[obj, status] : temp_objects)
     {
-        if (obj == nullptr)
-        {
-            continue;
-        }
-
         Force gravitation(0, 0);
-        auto &&[c_x, c_y] = coor;
-        for (auto &&[ano_obj, ano_coor] : ano_objects)
+        auto &&[c_x, c_y] = status.coordinate();
+        for (auto &&[ano_obj, ano_status] : ano_objects)
         {
-            if (ano_obj == nullptr || obj == ano_obj)
+            if (obj == ano_obj)
             {
                 continue;
             }
@@ -46,11 +41,11 @@ void Interstellar::on_tick(double ticked_time)
                 continue;
             }
 #endif
-            auto &&[ano_c_x, ano_c_y] = ano_coor;
+            auto &&[ano_c_x, ano_c_y] = ano_status.coordinate();
 
             // The universal gravitation, F = GMm/r²
             double r2 = std::pow(c_x - ano_c_x, 2) + std::pow(c_y - ano_c_y, 2);
-            double fg_value = GravitationConstant * obj->mass() * ano_obj->mass() / r2;
+            double fg_value = GravitationConstant * obj.mass() * ano_obj.mass() / r2;
 
             double r = std::sqrt(r2);
             double fg_x = (ano_c_x - c_x) * fg_value / r;
@@ -65,14 +60,14 @@ void Interstellar::on_tick(double ticked_time)
         }
 
         // a = F / m
-        Acceleration acc = (obj->sum_of_forces() + gravitation) / obj->mass();
+        Acceleration acc = (status.sum_of_forces() + gravitation) / obj.mass();
 
         // x = Vt + ½at²
-        Displacement d = obj->get_velocity() * ticked_time + 0.5 * acc * std::pow(ticked_time, 2);
-        coor += d;
+        Displacement d = status.velocity() * ticked_time + 0.5 * acc * std::pow(ticked_time, 2);
+        status.coordinate() += d;
 
         // Vt = V0 + at
-        obj->set_velocity(obj->get_velocity() + acc * ticked_time);
+        status.velocity() += acc * ticked_time;
     }
     std::unique_lock<std::shared_mutex> wrlock(_objs_mutex);
     _objects = std::move(temp_objects);

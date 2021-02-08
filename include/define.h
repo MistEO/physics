@@ -21,7 +21,7 @@ namespace meophys
     using Coordinate = TDValue; // 坐标
 
     template <typename T>
-    T distance(const std::pair<T, T> &lhs, const std::pair<T, T> &rhs)
+    const T distance(const std::pair<T, T> &lhs, const std::pair<T, T> &rhs)
     {
         static_assert(std::is_arithmetic<T>::value, "Parameter is not arithmetic.");
         return std::sqrt(std::pow(lhs.first - rhs.first, 2) + std::pow(lhs.second - rhs.second, 2));
