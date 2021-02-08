@@ -30,7 +30,7 @@ shared: $(SHARED_LIB)
 $(SHARED_LIB):
 	$(CXX) -Wall $(OPT) -std=c++17 $(CXXFLAGS) -o $(SHARED_LIB) $(SRC_FILES) -I$(INC) $(LIBS) -fPIC -shared
 
-$(BUILD_DIR)/%.o: $(SRC)/%.cpp $(INC)/*.h
+$(BUILD_DIR)/%.o: $(SRC)/%.cpp $(INC)/*.h $(INC)/*.hpp
 	$(CXX) -Wall $(OPT) -std=c++17 $(CXXFLAGS) -o $@ -c $< -I$(INC)
 
 .PHONY: clean
