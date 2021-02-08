@@ -1,7 +1,7 @@
 #pragma once
 
 #include "define.h"
-#include "space.h"
+#include "space.hpp"
 
 namespace meophys
 {
