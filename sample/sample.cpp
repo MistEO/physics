@@ -9,12 +9,14 @@
 using namespace meophys;
 
 void world_and_ball();
+void world_and_many_ball();
 void interstellar_and_planet();
-void print_loop(Space *space, std::vector<std::shared_ptr<Object>> &&objects, double scale = 1.0);
+void print_loop(Space *space, const std::vector<std::shared_ptr<Object>> &objects, double scale = 1.0);
 
 int main()
 {
-    world_and_ball();
+    world_and_many_ball();
+    // world_and_ball();
     // interstellar_and_planet();
     return 0;
 }
@@ -55,7 +57,29 @@ void world_and_ball()
     print_loop(&world, {ball_ptr, ball_2_ptr});
 }
 
-void print_loop(Space *space, std::vector<std::shared_ptr<Object>> &&objects, double scale)
+void world_and_many_ball()
+{
+    World world;
+    world.set_boundary(50, -10, 0, 50);
+
+    std::vector<std::shared_ptr<Object>> objptr_vec;
+    for (int i = 0; i != 10; ++i)
+    {
+        Object ball(std::to_string(i), 1);
+        ball.elasticity() = 0.9;
+        ball.friction() = 0.1;
+        ObjectStatus ball_status(Coordinate(i * 2, i * 2), Velocity(i, 0), {Force(0, -9.8)});
+        auto ptr = world.emplace_object(std::move(ball), std::move(ball_status));
+        objptr_vec.push_back(ptr);
+    }
+
+    world.time().timeflow() = 2.5;
+    world.time().start();
+
+    print_loop(&world, objptr_vec);
+}
+
+void print_loop(Space *space, const std::vector<std::shared_ptr<Object>> &objects, double scale)
 {
     printf("\033[?25l\033[2J");
 
@@ -65,18 +89,16 @@ void print_loop(Space *space, std::vector<std::shared_ptr<Object>> &&objects, do
 
     while (true)
     {
+        printf("\033[?25l\033[2J");
         for (size_t i = 0; i != objects.size(); ++i)
         {
             auto &&[doublex, doubley] = space->object_status(objects[i]).coordinate() * scale;
             int x = static_cast<int>(std::round(doublex)) + 30;
-            int y = -static_cast<int>(std::round(doubley / 2.0)) + 10;
+            int y = -static_cast<int>(std::round(doubley)) + 20;
 
             auto &&[pre_x, pre_y] = pre_coor[i];
-            if (pre_x == x && pre_y == y)
-            {
-                continue;
-            }
-            printf("\033[%d;%dH \033[%d;%dH%s\n", pre_y, pre_x, y, x, objects[i]->name().c_str());
+
+            printf("\033[%d;%dH%s\n", y, x, objects[i]->name().c_str());
 
             pre_x = x;
             pre_y = y;
