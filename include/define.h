@@ -5,7 +5,7 @@
 
 namespace meophys
 {
-    static constexpr double PlanckLength = 1e-15;
+    static constexpr double PlanckLength = 1e-4;
 
     using TDValue = std::pair<double, double>; // 二维量
 

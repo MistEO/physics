@@ -74,13 +74,15 @@ void interstellar_and_planet()
 void world_and_ball()
 {
     World world;
-    world.set_boundary(10, 0, 0, 30);
+    world.set_boundary(20, -10, 0, 50);
 
-    auto ball = std::make_shared<Object>("Ball", 1, 0.9, 0.9);
+    auto ball = std::make_shared<Object>("Ball", 1);
+    ball->elasticity() = 0.9;
+    ball->friction() = 0.5;
     ball->exert_force(Force(0, -9.8));
     ball->set_velocity(Velocity(5, 0));
 
-    world.emplace_object(ball, Coordinate(0, 10));
+    world.emplace_object(ball, Coordinate(1, 10));
 
     printf("\033[?25l\033[2J");
     int pre_x = 0, pre_y = 0;

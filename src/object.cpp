@@ -2,12 +2,14 @@
 
 using namespace meophys;
 
-Object::Object(std::string name, long double mass, double elasticity, double friction)
+Object::Object(std::string name, long double mass)
     : _name(std::move(name)),
-      _mass(mass),
-      _elasticity(elasticity),
-      _friction(friction)
+      _mass(mass)
 {
+    if (mass <= 0)
+    {
+        throw std::invalid_argument("mass must be positive");
+    }
 }
 
 Object::Object(const Object &obj)

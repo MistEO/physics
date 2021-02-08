@@ -12,7 +12,7 @@ namespace meophys
     {
     public:
         Object() = delete;
-        Object(std::string name, long double mass, double elasticity = 1.0, double friction = 0);
+        Object(std::string name, long double mass);
         Object(const Object &obj);
         Object(Object &&obj);
 
@@ -24,6 +24,7 @@ namespace meophys
 
         virtual const std::string &name() const noexcept { return _name; }
         virtual long double &mass() noexcept { return _mass; }
+        virtual double &radius() noexcept { return _radius; }
         virtual double &elasticity() noexcept { return _elasticity; }
         virtual double &friction() noexcept { return _friction; }
 
@@ -43,10 +44,12 @@ namespace meophys
 
     protected:
         std::string _name;        // 名字，无实际作用
-        long double _mass = 1.0;  // 质量
+        long double _mass = 1.0;  // 质量，单位kg
+        double _radius = 1.0;     // 半径，单位m
         double _elasticity = 1.0; // 弹性系数
         double _friction = 0;     // 摩擦系数
-        Velocity _velocity;       // 速率
+
+        Velocity _velocity; // 速率，单位m/s
         mutable std::shared_mutex _velocity_mutex;
         std::vector<std::shared_ptr<Force>> _forces; // 所受的力
         mutable std::shared_mutex _force_mutex;
