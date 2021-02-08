@@ -74,7 +74,7 @@ void interstellar_and_planet()
 void world_and_ball()
 {
     World world;
-    world.set_boundary(20, -10, 0, 50);
+    world.set_boundary(11, -10, 0, 50);
 
     auto ball = std::make_shared<Object>("Ball", 1);
     ball->elasticity() = 0.9;

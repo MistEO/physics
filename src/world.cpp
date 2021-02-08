@@ -16,6 +16,7 @@ void World::on_tick(double ticked_time)
         {
             continue;
         }
+        //TODO: 物体碰撞
 
         // a = F / m
         Acceleration acc = obj->sum_of_forces() / obj->mass();
@@ -25,10 +26,10 @@ void World::on_tick(double ticked_time)
         // 算一下如果直接走，会不会穿模
         Coordinate will_go = coor + dp;
         auto &&[will_go_x, will_go_y] = will_go;
-        bool top_out = will_go_y + obj->radius() > _boundary.top - PlanckLength;
-        bool left_out = will_go_x - obj->radius() < _boundary.left + PlanckLength;
-        bool bottom_out = will_go_y - obj->radius() < _boundary.bottom + PlanckLength;
-        bool right_out = will_go_x + obj->radius() > _boundary.right - PlanckLength;
+        bool top_out = will_go_y + obj->radius() > _boundary.top - DoubleDiff;
+        bool left_out = will_go_x - obj->radius() < _boundary.left + DoubleDiff;
+        bool bottom_out = will_go_y - obj->radius() < _boundary.bottom + DoubleDiff;
+        bool right_out = will_go_x + obj->radius() > _boundary.right - DoubleDiff;
 
         // 如果都不穿模，直接走就行了
         if (!(top_out || bottom_out || left_out || right_out))

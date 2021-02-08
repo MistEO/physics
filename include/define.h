@@ -6,6 +6,9 @@
 namespace meophys
 {
     static constexpr double PlanckLength = 1e-4;
+    static constexpr double DoubleDiff = 1e-20;
+
+    // TODO: 三维量
 
     using TDValue = std::pair<double, double>; // 二维量
 
