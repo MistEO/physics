@@ -39,6 +39,11 @@ namespace meophys
             std::unique_lock<std::shared_mutex> lock(_objs_mutex);
             _objects[object] = std::move(coor);
         }
+        virtual void set_coor(std::shared_ptr<Object> object, Coordinate::first_type coor_x, Coordinate::second_type coor_y)
+        {
+            std::unique_lock<std::shared_mutex> lock(_objs_mutex);
+            _objects[object] = Coordinate(coor_x, coor_y);
+        }
 
         virtual Time &time() { return *_time_ptr; }
 
@@ -46,7 +51,7 @@ namespace meophys
         virtual void on_tick(double ticked_time);
 
         std::unique_ptr<Time> _time_ptr = nullptr;
-        std::unordered_map<std::shared_ptr<Object>, Acceleration> _objects;
+        std::unordered_map<std::shared_ptr<Object>, Coordinate> _objects;
         mutable std::shared_mutex _objs_mutex;
 
     private:

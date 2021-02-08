@@ -1,12 +1,13 @@
 #pragma once
 
+#include <cmath>
 #include <utility>
 #include <type_traits>
 
 namespace meophys
 {
     static constexpr double PlanckLength = 1e-4;
-    static constexpr double DoubleDiff = 1e-20;
+    static constexpr double FloatDiff = 1e-20;
 
     // TODO: 三维量
 
@@ -18,6 +19,13 @@ namespace meophys
     using Displacement = TDValue; // 位移
 
     using Coordinate = TDValue; // 坐标
+
+    template <typename T>
+    T distance(const std::pair<T, T> &lhs, const std::pair<T, T> &rhs)
+    {
+        static_assert(std::is_arithmetic<T>::value, "Parameter is not arithmetic.");
+        return std::sqrt(std::pow(lhs.first - rhs.first, 2) + std::pow(lhs.second - rhs.second, 2));
+    }
 
     template <typename T>
     std::pair<T, T> operator+(const std::pair<T, T> &lhs, const std::pair<T, T> &rhs)
@@ -80,6 +88,12 @@ namespace meophys
     {
         static_assert(std::is_arithmetic<T>::value, "Parameter is not arithmetic.");
         return lhs = lhs + rhs;
+    }
+    template <typename T>
+    std::pair<T, T> operator-(const std::pair<T, T> &rhs)
+    {
+        static_assert(std::is_arithmetic<T>::value, "Parameter is not arithmetic.");
+        return std::make_pair(-rhs.first, -rhs.second);
     }
 
 } // namespace meophys

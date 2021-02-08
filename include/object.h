@@ -38,6 +38,11 @@ namespace meophys
             std::unique_lock<std::shared_mutex> lock(_velocity_mutex);
             _velocity = std::move(velocity);
         }
+        virtual void set_velocity(Velocity::first_type vx, Velocity::second_type vy)
+        {
+            std::unique_lock<std::shared_mutex> lock(_velocity_mutex);
+            _velocity = Velocity(vx, vy);
+        }
 
         Object &operator=(const Object &rhs);
         Object &operator=(Object &&rhs);
@@ -53,7 +58,6 @@ namespace meophys
         mutable std::shared_mutex _velocity_mutex;
         std::vector<std::shared_ptr<Force>> _forces; // 所受的力
         mutable std::shared_mutex _force_mutex;
-
-        // TODO: 物体面积
     };
+
 } // namespace meophys

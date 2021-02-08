@@ -76,6 +76,7 @@ void Time::tick(Time *p_this, Space *p_space)
             std::unique_lock<std::mutex> pause_lock(p_this->_pause_mutex);
             p_this->_pause_cv.wait(pause_lock, [&p_this] { return !p_this->_pause; });
         }
+        // auto t = std::chrono::system_clock::now() - begin_time;
         std::this_thread::sleep_until(begin_time + std::chrono::nanoseconds(ProcessInterval));
     }
 }
