@@ -45,7 +45,7 @@ void Interstellar::on_tick(double ticked_time)
 
             // The universal gravitation, F = GMm/r²
             double r2 = std::pow(c_x - ano_c_x, 2) + std::pow(c_y - ano_c_y, 2);
-            double fg_value = GravitationConstant * obj.mass() * ano_obj.mass() / r2;
+            double fg_value = GravitationConstant * obj->mass() * ano_obj->mass() / r2;
 
             double r = std::sqrt(r2);
             double fg_x = (ano_c_x - c_x) * fg_value / r;
@@ -60,7 +60,7 @@ void Interstellar::on_tick(double ticked_time)
         }
 
         // a = F / m
-        Acceleration acc = (status.sum_of_forces() + gravitation) / obj.mass();
+        Acceleration acc = (status.sum_of_forces() + gravitation) / obj->mass();
 
         // x = Vt + ½at²
         Displacement d = status.velocity() * ticked_time + 0.5 * acc * std::pow(ticked_time, 2);

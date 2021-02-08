@@ -13,17 +13,17 @@ void World::on_tick(double ticked_time)
     for (auto &&[obj, status] : temp_objects)
     {
         // a = F / m
-        Acceleration acc = status.sum_of_forces() / obj.mass();
+        Acceleration acc = status.sum_of_forces() / obj->mass();
         // x = Vt + ½at²
         Displacement dp = status.velocity() * ticked_time + 0.5 * acc * std::pow(ticked_time, 2);
 
         // 算一下如果直接走，会不会穿模
         Coordinate will_go = status.coordinate() + dp;
         auto &&[will_go_x, will_go_y] = will_go;
-        bool top_out = will_go_y + obj.radius() > _boundary.top - FloatDiff;
-        bool left_out = will_go_x - obj.radius() < _boundary.left + FloatDiff;
-        bool bottom_out = will_go_y - obj.radius() < _boundary.bottom + FloatDiff;
-        bool right_out = will_go_x + obj.radius() > _boundary.right - FloatDiff;
+        bool top_out = will_go_y + obj->radius() > _boundary.top - FloatDiff;
+        bool left_out = will_go_x - obj->radius() < _boundary.left + FloatDiff;
+        bool bottom_out = will_go_y - obj->radius() < _boundary.bottom + FloatDiff;
+        bool right_out = will_go_x + obj->radius() > _boundary.right - FloatDiff;
 
         // 如果都不穿模，直接走就行了
         if (!(top_out || bottom_out || left_out || right_out))
@@ -42,15 +42,15 @@ void World::on_tick(double ticked_time)
         if (top_out || bottom_out)
         {
             int direction = std::fabs(v_x * ticked_time) <= PlanckLength ? 0 : (v_x > 0 ? 1 : -1);
-            friction.first = direction * obj.friction() * status.sum_of_forces().second;
+            friction.first = direction * obj->friction() * status.sum_of_forces().second;
         }
         if (left_out || right_out)
         {
             int direction = std::fabs(v_y * ticked_time) <= PlanckLength ? 0 : (v_y > 0 ? 1 : -1);
-            friction.second = direction * obj.friction() * status.sum_of_forces().first;
+            friction.second = direction * obj->friction() * status.sum_of_forces().first;
         }
 
-        acc = (status.sum_of_forces() + friction) / obj.mass();
+        acc = (status.sum_of_forces() + friction) / obj->mass();
         // 若已经贴在边界上了（或即将穿模），且力朝边界外；则该方向上不提供加速度
         if ((top_out && status.sum_of_forces().second > 0) ||
             (bottom_out && status.sum_of_forces().second < 0))
@@ -68,20 +68,20 @@ void World::on_tick(double ticked_time)
 
         if (top_out)
         {
-            will_go_y = _boundary.top - obj.radius();
+            will_go_y = _boundary.top - obj->radius();
         }
         else if (bottom_out)
         {
-            will_go_y = _boundary.bottom + obj.radius();
+            will_go_y = _boundary.bottom + obj->radius();
         }
 
         if (right_out)
         {
-            will_go_x = _boundary.right - obj.radius();
+            will_go_x = _boundary.right - obj->radius();
         }
         else if (left_out)
         {
-            will_go_x = _boundary.left + obj.radius();
+            will_go_x = _boundary.left + obj->radius();
         }
         status.coordinate() = will_go;
 
@@ -89,11 +89,11 @@ void World::on_tick(double ticked_time)
         std::tie(v_x, v_y) = status.velocity() + acc * ticked_time;
         if (top_out || bottom_out)
         {
-            v_y = -v_y * std::pow(obj.elasticity(), 2);
+            v_y = -v_y * std::pow(obj->elasticity(), 2);
         }
         if (left_out || right_out)
         {
-            v_x = -v_x * std::pow(obj.elasticity(), 2);
+            v_x = -v_x * std::pow(obj->elasticity(), 2);
         }
         if (std::fabs(v_x * ticked_time) < PlanckLength)
         {
@@ -120,13 +120,13 @@ void World::on_tick(double ticked_time)
             }
 
             // 发生碰撞
-            if (distance(status.coordinate(), ano_status.coordinate()) < (obj.radius() + ano_obj.radius() + FloatDiff))
+            if (distance(status.coordinate(), ano_status.coordinate()) < (obj->radius() + ano_obj->radius() + FloatDiff))
             {
-                double e = (obj.elasticity() + ano_obj.elasticity()) / 2;
+                double e = (obj->elasticity() + ano_obj->elasticity()) / 2;
                 auto v1 = status.velocity();
                 auto v2 = ano_status.velocity();
-                auto &m1 = obj.mass();
-                auto &m2 = ano_obj.mass();
+                auto &m1 = obj->mass();
+                auto &m2 = ano_obj->mass();
 
                 // Elastic Collision
                 // v1' = ( (m1-e*m2)*v1+(1+e)*m2*v2 ) / ( m1+m2 )
@@ -139,5 +139,5 @@ void World::on_tick(double ticked_time)
     }
 
     std::unique_lock<std::shared_mutex> wrlock(_objs_mutex);
-    _objects = std::move(temp_objects);
+    _objects = std::move(collision_objects);
 }

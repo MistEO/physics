@@ -10,7 +10,7 @@ using namespace meophys;
 
 void world_and_ball();
 void interstellar_and_planet();
-void print_loop(std::vector<std::unordered_map<meophys::Object, meophys::ObjectStatus>::iterator> &&objects, double scale = 1.0);
+void print_loop(Space *space, std::vector<std::shared_ptr<Object>> &&objects, double scale = 1.0);
 
 int main()
 {
@@ -29,7 +29,7 @@ void interstellar_and_planet()
     space.time().timeflow() = 1000000;
     space.time().start();
 
-    print_loop({earth, month}, 1e-8);
+    print_loop(&space, {earth, month}, 1e-8);
 }
 
 void world_and_ball()
@@ -37,25 +37,25 @@ void world_and_ball()
     World world;
     world.set_boundary(11, -10, 0, 50);
 
-    Object ball("Ball", 1);
+    Object ball("1", 1);
     ball.elasticity() = 0.9;
     ball.friction() = 0.5;
     ObjectStatus ball_status(Coordinate(1, 10), Velocity(5, 0), {Force(0, -9.8)});
 
-    Object ball_2("Ball2", 1);
+    Object ball_2("2", 1);
     ball_2.elasticity() = 0.9;
     ball_2.friction() = 0.5;
     ObjectStatus ball_2_status(Coordinate(20, 10), Velocity(-5, 0), {Force(0, -9.8)});
 
-    auto ball_iter = world.emplace_object(std::move(ball), std::move(ball_status));
-    auto ball_2_iter = world.emplace_object(std::move(ball_2), std::move(ball_2_status));
+    auto ball_ptr = world.emplace_object(std::move(ball), std::move(ball_status));
+    auto ball_2_ptr = world.emplace_object(std::move(ball_2), std::move(ball_2_status));
 
     world.time().start();
 
-    print_loop({ball_iter, ball_2_iter});
+    print_loop(&world, {ball_ptr, ball_2_ptr});
 }
 
-void print_loop(std::vector<std::unordered_map<meophys::Object, meophys::ObjectStatus>::iterator> &&objects, double scale)
+void print_loop(Space *space, std::vector<std::shared_ptr<Object>> &&objects, double scale)
 {
     printf("\033[?25l\033[2J");
 
@@ -67,7 +67,7 @@ void print_loop(std::vector<std::unordered_map<meophys::Object, meophys::ObjectS
     {
         for (size_t i = 0; i != objects.size(); ++i)
         {
-            auto &&[doublex, doubley] = objects[i]->second.coordinate() * scale;
+            auto &&[doublex, doubley] = space->object_status(objects[i]).coordinate() * scale;
             int x = static_cast<int>(std::round(doublex)) + 30;
             int y = -static_cast<int>(std::round(doubley / 2.0)) + 10;
 
@@ -76,12 +76,11 @@ void print_loop(std::vector<std::unordered_map<meophys::Object, meophys::ObjectS
             {
                 continue;
             }
-            printf("\033[%d;%dH \033[%d;%dHO", pre_y, pre_x, y, x);
+            printf("\033[%d;%dH \033[%d;%dH%s\n", pre_y, pre_x, y, x, objects[i]->name().c_str());
 
             pre_x = x;
             pre_y = y;
         }
-        printf("\n");
-        usleep(1000 * 100);
+        usleep(1000 * 10);
     }
 }
