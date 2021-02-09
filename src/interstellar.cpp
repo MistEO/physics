@@ -44,7 +44,7 @@ void Interstellar::on_tick(double ticked_time)
             auto &&[ano_c_x, ano_c_y] = ano_status.coordinate();
 
             // The universal gravitation, F = GMm/r²
-            double r2 = std::pow(c_x - ano_c_x, 2) + std::pow(c_y - ano_c_y, 2);
+            double r2 = distance_squared(status.coordinate(), ano_status.coordinate());
             double fg_value = GravitationConstant * obj->mass() * ano_obj->mass() / r2;
 
             double r = std::sqrt(r2);

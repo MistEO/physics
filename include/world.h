@@ -1,5 +1,6 @@
 #pragma once
 
+#include <vector>
 #include "define.h"
 #include "space.hpp"
 
@@ -28,11 +29,19 @@ namespace meophys
             _boundary.right = right;
         }
         Boundary &boundary() { return _boundary; }
+        void explode(Coordinate coordinate, long long energy)
+        {
+            std::unique_lock<std::mutex> lock(_explosion_mutex);
+            _explosions.emplace_back(std::move(coordinate), std::move(energy));
+        }
 
     protected:
         virtual void on_tick(double ticked_time) override;
 
     private:
         Boundary _boundary;
+        constexpr static long double ExplosionAttention = 1.0;
+        std::vector<std::pair<Coordinate, long long>> _explosions;
+        std::mutex _explosion_mutex;
     };
 } // namespace meophys

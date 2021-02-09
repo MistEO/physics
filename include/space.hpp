@@ -28,7 +28,7 @@ namespace meophys
             return ptr;
         }
         virtual std::shared_ptr<Object>
-        emplace_object(Object object, Coordinate coordinate, Velocity velocity = Velocity(0, 0), std::vector<Force> forces = std::vector<Force>())
+        emplace_object(Object object, Coordinate coordinate, Velocity velocity = Velocity(0, 0), std::list<Force> forces = std::list<Force>())
         {
             auto ptr = std::make_shared<Object>(std::move(object));
             std::unique_lock<std::shared_mutex> lock(_objs_mutex);
