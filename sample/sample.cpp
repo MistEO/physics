@@ -68,12 +68,12 @@ void world_and_ball_test()
     Object ball("1", 1);
     ball.elasticity() = 0.9;
     ball.friction() = 0.1;
-    ObjectStatus ball_status(Coordinate(10, 20), Velocity(0, 0), {Force(0, -9.8)});
+    ObjectStatus ball_status(Coordinate(10, 10), Velocity(0, 0), {Force(0.1, -9.8)});
 
     Object ball_2("2", 1);
     ball_2.elasticity() = 0.9;
     ball_2.friction() = 0.1;
-    ObjectStatus ball_2_status(Coordinate(9.5, 1), Velocity(0, 0), {Force(0, -9.8)});
+    ObjectStatus ball_2_status(Coordinate(9, 1), Velocity(0, 0), {Force(0, -9.8)});
 
     auto ball_ptr = world.emplace_object(std::move(ball), std::move(ball_status));
     auto ball_2_ptr = world.emplace_object(std::move(ball_2), std::move(ball_2_status));

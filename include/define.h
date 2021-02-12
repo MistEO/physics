@@ -6,19 +6,19 @@
 
 namespace meophys
 {
-    static constexpr double PlanckLength = 1e-16;
+    static constexpr double PlanckLength = 1e-8;
     static constexpr double FloatDiff = 1e-20;
 
     // TODO: 三维量
 
-    using TDValue = std::pair<double, double>; // 二维量
+    using Vector = std::pair<double, double>; // 二维量
 
-    using Force = TDValue;        // 力
-    using Velocity = TDValue;     // 速率
-    using Acceleration = TDValue; // 加速度
-    using Displacement = TDValue; // 位移
+    using Force = Vector;        // 力
+    using Velocity = Vector;     // 速率
+    using Acceleration = Vector; // 加速度
+    using Displacement = Vector; // 位移
 
-    using Coordinate = TDValue; // 坐标
+    using Coordinate = Vector; // 坐标
 
     template <typename T>
     const T distance_squared(const std::pair<T, T> &lhs, const std::pair<T, T> &rhs)
@@ -109,9 +109,10 @@ namespace meophys
     std::pair<T, T> operator-(const std::pair<T, T> &rhs) noexcept
     {
         static_assert(std::is_arithmetic<T>::value, "Parameter is not arithmetic.");
-        rhs.first = -rhs.first;
-        rhs.second = -rhs.second;
-        return rhs;
+        auto temp = rhs;
+        temp.first = -rhs.first;
+        temp.second = -rhs.second;
+        return temp;
     }
 
 } // namespace meophys
