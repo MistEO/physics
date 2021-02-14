@@ -71,4 +71,5 @@ void Interstellar::on_tick(double ticked_time)
     }
     std::unique_lock<std::shared_mutex> wrlock(_objs_mutex);
     _objects = std::move(cur_objects);
+    run_task();
 }

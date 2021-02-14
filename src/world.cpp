@@ -130,51 +130,57 @@ void World::on_tick(double ticked_time)
                     // 别人对自己的力
                     {
                         auto &&[f_x2, f_y2] = ano_status.sum_of_forces();
-                        double f_cosa = (tx * f_x2 + ty * f_y2) /
-                                        (std::sqrt(std::pow(tx, 2) + std::pow(ty, 2)) *
-                                         std::sqrt(std::pow(f_x2, 2) + std::pow(f_y2, 2)));
+                        if (!(f_x2 == 0 && f_y2 == 0))
+                        {
+                            double f_cosa = (tx * f_x2 + ty * f_y2) /
+                                            (std::sqrt(std::pow(tx, 2) + std::pow(ty, 2)) *
+                                             std::sqrt(std::pow(f_x2, 2) + std::pow(f_y2, 2)));
 
-                        // F压力 = F2 * cosθ             θ ∈ [ 0 - 90°), cosθ ∈ (0, 1)
-                        // F压力 = 0                    θ ∈ [90 - 180°], cosθ ∈ [-1, 0], 1
-                        if (0 < f_cosa && f_cosa < 1.0)
-                        {
-                            double fp_norm = meophys::norm(ano_status.sum_of_forces()) * f_cosa;
-                            double fp_x = fp_norm / obj_distance * tx;
-                            double fp_y = fp_norm / obj_distance * ty;
-                            collision_force += Force(fp_x, fp_y);
-                        }
-                        else if (f_cosa == 1.0 || (-1.0 <= f_cosa && f_cosa <= 0))
-                        {
-                            // f_pressure = 0, do nothing
-                        }
-                        else
-                        {
-                            throw std::runtime_error("cosθ error:" + std::to_string(f_cosa));
+                            // F压力 = F2 * cosθ             θ ∈ [ 0 - 90°), cosθ ∈ (0, 1)
+                            // F压力 = 0                    θ ∈ [90 - 180°], cosθ ∈ [-1, 0], 1
+                            if (0 < f_cosa && f_cosa < 1.0)
+                            {
+                                double fp_norm = meophys::norm(ano_status.sum_of_forces()) * f_cosa;
+                                double fp_x = fp_norm / obj_distance * tx;
+                                double fp_y = fp_norm / obj_distance * ty;
+                                collision_force += Force(fp_x, fp_y);
+                            }
+                            else if (f_cosa == 1.0 || (-1.0 <= f_cosa && f_cosa <= 0))
+                            {
+                                // f_pressure = 0, do nothing
+                            }
+                            else
+                            {
+                                throw std::runtime_error("cosθ error:" + std::to_string(f_cosa));
+                            }
                         }
                     }
 
                     // 自己对别人的力的反作用力
                     {
                         auto &&[f_x2, f_y2] = status.sum_of_forces();
-                        double f_cosa = (neg_tx * f_x2 + neg_ty * f_y2) / (std::sqrt(std::pow(neg_tx, 2) + std::pow(neg_ty, 2)) * std::sqrt(std::pow(f_x2, 2) + std::pow(f_y2, 2)));
+                        if (!(f_x2 == 0 && f_y2 == 0))
+                        {
+                            double f_cosa = (neg_tx * f_x2 + neg_ty * f_y2) / (std::sqrt(std::pow(neg_tx, 2) + std::pow(neg_ty, 2)) * std::sqrt(std::pow(f_x2, 2) + std::pow(f_y2, 2)));
 
-                        // F压力 = F2 * cosθ             θ ∈ [ 0 - 90°), cosθ ∈ (0, 1)
-                        // F压力 = 0                    θ ∈ [90 - 180°], cosθ ∈ [-1, 0], 1
-                        if (0 < f_cosa && f_cosa < 1.0)
-                        {
-                            double fp_norm = meophys::norm(status.sum_of_forces()) * f_cosa;
-                            double fp_x = fp_norm / obj_distance * tx;
-                            double fp_y = fp_norm / obj_distance * ty;
-                            // 注意是反作用力，负的
-                            collision_force += (-Force(fp_x, fp_y));
-                        }
-                        else if (f_cosa == 1.0 || (-1.0 <= f_cosa && f_cosa <= 0))
-                        {
-                            // f_pressure = 0, do nothing
-                        }
-                        else
-                        {
-                            throw std::runtime_error("cosθ error:" + std::to_string(f_cosa));
+                            // F压力 = F2 * cosθ             θ ∈ [ 0 - 90°), cosθ ∈ (0, 1)
+                            // F压力 = 0                    θ ∈ [90 - 180°], cosθ ∈ [-1, 0], 1
+                            if (0 < f_cosa && f_cosa < 1.0)
+                            {
+                                double fp_norm = meophys::norm(status.sum_of_forces()) * f_cosa;
+                                double fp_x = fp_norm / obj_distance * tx;
+                                double fp_y = fp_norm / obj_distance * ty;
+                                // 注意是反作用力，负的
+                                collision_force += (-Force(fp_x, fp_y));
+                            }
+                            else if (f_cosa == 1.0 || (-1.0 <= f_cosa && f_cosa <= 0))
+                            {
+                                // f_pressure = 0, do nothing
+                            }
+                            else
+                            {
+                                throw std::runtime_error("cosθ error:" + std::to_string(f_cosa));
+                            }
                         }
                     }
                 }
@@ -315,4 +321,5 @@ void World::on_tick(double ticked_time)
 
     std::unique_lock<std::shared_mutex> wrlock(_objs_mutex);
     _objects = std::move(cur_objects);
+    run_task();
 }
