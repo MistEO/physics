@@ -21,24 +21,39 @@ namespace meophys
     using Coordinate = Vector; // 坐标
 
     template <typename T>
-    const T distance_squared(const std::pair<T, T> &lhs, const std::pair<T, T> &rhs)
+    T distance_squared(const std::pair<T, T> &lhs, const std::pair<T, T> &rhs)
     {
         static_assert(std::is_arithmetic<T>::value, "Parameter is not arithmetic.");
         return std::pow(lhs.first - rhs.first, 2) + std::pow(lhs.second - rhs.second, 2);
     }
 
     template <typename T>
-    const T distance(const std::pair<T, T> &lhs, const std::pair<T, T> &rhs)
+    T distance(const std::pair<T, T> &lhs, const std::pair<T, T> &rhs)
     {
         static_assert(std::is_arithmetic<T>::value, "Parameter is not arithmetic.");
         return std::sqrt(distance_squared(lhs, rhs));
     }
 
     template <typename T>
-    const T abs(const std::pair<T, T> &lhs)
+    T norm(const std::pair<T, T> &lhs)
     {
         static_assert(std::is_arithmetic<T>::value, "Parameter is not arithmetic.");
         return std::sqrt(std::pow(lhs.first, 2) + std::pow(lhs.second, 2));
+    }
+
+    template <typename T>
+    std::pair<T, T> abs(const std::pair<T, T> &lhs)
+    {
+        static_assert(std::is_arithmetic<T>::value, "Parameter is not arithmetic.");
+
+        if (std::is_integral<T>::value)
+        {
+            return std::make_pair(std::abs(lhs.first), std::abs(lhs.second));
+        }
+        else if (std::is_floating_point<T>::value)
+        {
+            return std::make_pair(std::fabs(lhs.first), std::fabs(lhs.second));
+        }
     }
 
     template <typename T>

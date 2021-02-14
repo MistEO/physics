@@ -17,9 +17,9 @@ void print_loop(Space *space, const std::vector<std::shared_ptr<Object>> &object
 
 int main()
 {
-    // world_and_boom();
+    world_and_boom();
     // world_and_ball_test();
-    world_and_many_ball();
+    // world_and_many_ball();
     // interstellar_and_planet();
     return 0;
 }
@@ -107,7 +107,7 @@ void world_and_boom()
 
     std::thread t(print_loop, &world, objptr_vec, 1.0);
     sleep(1);
-    world.explode(Coordinate(16, 0.5), 500);
+    world.explode(Coordinate(16, 0.5), 10000);
     t.join();
 }
 

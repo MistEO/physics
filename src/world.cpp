@@ -18,12 +18,16 @@ void World::on_tick(double ticked_time)
 
     for (auto &&[obj, status] : cur_objects)
     {
+#ifdef DEBUG
         auto name = obj->name(); // for debugger
+#endif
         // 碰撞的计算
         Force collision_force(0, 0);
         for (auto &&[ano_obj, ano_status] : pre_objects)
         {
+#ifdef DEBUG
             auto ano_name = ano_obj->name(); // for debugger
+#endif
 
             if (obj == ano_obj)
             {
@@ -34,9 +38,12 @@ void World::on_tick(double ticked_time)
             double obj_distance = meophys::distance(status.coordinate(), ano_status.coordinate());
             if (obj_distance < (obj->radius() + ano_obj->radius() + FloatDiff))
             {
-                auto &&[x1, y1] = status.coordinate() - ano_status.coordinate();
+                // 法线t轴
+                auto &&[tx, ty] = status.coordinate() - ano_status.coordinate();
+                auto &&[neg_tx, neg_ty] = ano_status.coordinate() - status.coordinate();
 
-                // 非对心碰撞，速度计算，
+                // 非对心碰撞，速度计算。
+                // 不应对v1、v2做动量计算，而是对v1、v2在法线t上的分量速度做动量计算
                 {
                     auto &e = obj->elasticity();
                     auto v1 = status.velocity();
@@ -44,73 +51,96 @@ void World::on_tick(double ticked_time)
                     auto &m1 = obj->mass();
                     auto &m2 = ano_obj->mass();
 
-                    // 不应对v1、v2做动量计算，而是对v1、v2在法线上的分量速度做动量计算
-                    Velocity v1t = Velocity(0, 0); // v1在法线/切线坐标系上的速度分量
-                    double v1_cosa = 0;
-                    double v1t_x = 0;
+                    double v1t = 0; // v1在法线t上的速度分量
+                    double v1s = 0; // v1在切线s上的速度分量
                     if (v1 == Velocity(0, 0))
                     {
-                        v1t = Velocity(0, 0);
+                        v1t = 0;
+                        v1s = 0;
                     }
                     else
                     {
-                        auto &&[v1_x2, v1_y2] = v1;
+                        auto &&[v1x, v1y] = v1;
+                        // v1和法线t的夹角cos
                         // cosα = ab / | a || b |= (x1x2 + y1y2) / (√(x1²+ y1²)√(x2²+ y2²))
-                        v1_cosa = (x1 * v1_x2 + y1 * v1_y2) / (std::sqrt(std::pow(x1, 2) + std::pow(y1, 2)) * std::sqrt(std::pow(v1_x2, 2) + std::pow(v1_y2, 2)));
-                        v1t = v1_cosa * v1;
+                        double v1_t_cosa = (tx * v1x + ty * v1y) /
+                                           (std::sqrt(std::pow(tx, 2) + std::pow(ty, 2)) *
+                                            std::sqrt(std::pow(v1x, 2) + std::pow(v1y, 2)));
+                        // sin²a + cos²a = 1
+                        // TODO:这里的正弦值可能需要判断正负
+                        double v1_t_sina = std::sqrt(1 - std::pow(v1_t_cosa, 2));
+
+                        double v1_norm = meophys::norm(v1);
                         // 切线上的速度分量不参与碰撞，稍后直接还原到x/y坐标系中
+                        v1s = v1_t_sina * v1_norm;
                         // 而法线上的速度分量参与碰撞后，再还原到x/y坐标系中
-                        v1t_x = v1t.first;
-                        v1t.first = 0;
+                        v1t = v1_t_cosa * v1_norm;
                     }
 
-                    Velocity v2t = Velocity(0, 0); // v2在法线/切线坐标系上的速度分量
-                    double v2_cosa = 0;
+                    double v2t = 0; // v2在法线t上的速度分量
+                    // double v2s = 0; // v2在切线s上的速度分量，与当前需要计算的物体obj无关，该值后面用不到，不计算了
                     if (v2 == Velocity(0, 0))
                     {
-                        v2t = Velocity(0, 0);
+                        v2t = 0;
+                        // v2s = 0;
                     }
                     else
                     {
-                        auto &&[v2_x2, v2_y2] = v2;
+                        auto &&[v2x, v2y] = v2;
+                        // v2和法线t的夹角cos，因为这里的法线向量是依照obj算的，对obj2来说是反过来的，所以要取负号
                         // cosα = ab / | a || b |= (x1x2 + y1y2) / (√(x1²+ y1²)√(x2²+ y2²))
-                        v2_cosa = (x1 * v2_x2 + y1 * v2_y2) / (std::sqrt(std::pow(x1, 2) + std::pow(y1, 2)) * std::sqrt(std::pow(v2_x2, 2) + std::pow(v2_y2, 2)));
-                        v2t = v2_cosa * v2;
-                        // 切线上的速度分量不参与碰撞，别的物体的不用还原了
-                        v2t.first = 0;
+                        double v2_t_cosa = (tx * v2x + ty * v2y) /
+                                           (std::sqrt(std::pow(tx, 2) + std::pow(ty, 2)) *
+                                            std::sqrt(std::pow(v2x, 2) + std::pow(v2y, 2)));
+                        // TODO:这里的正弦值可能需要判断正负
+                        // double v2_t_sina = std::sqrt(1 - std::pow(v2_t_cosa, 2));
+
+                        double v2_norm = meophys::norm(v2);
+                        // v2s = v2_t_sina * v2_norm;
+                        // 而法线上的速度分量参与碰撞后，再还原到x/y坐标系中
+                        v2t = v2_t_cosa * v2_norm;
                     }
 
-                    // Elastic Collision
+                    // 法线t上碰撞后的速度
                     // v1' = ( (m1-e*m2)*v1+(1+e)*m2*v2 ) / ( m1+m2 )
-                    // 这里计算出来的同样也是法线/切线坐标系上的速度，这里的vt_x肯定是0
-                    auto &&[vt_x, vt_y] = (((m1 - e * m2) * v1t + (1 + e) * m2 * v2t) / (m1 + m2));
+                    v1t = (((m1 - e * m2) * v1t + (1 + e) * m2 * v2t) / (m1 + m2));
+                    // 法线t/切线s坐标系上的最终速度
+                    double vts_norm = meophys::norm(Velocity(v1s, v1t));
 
                     // 将法线上的速度，转换成x/y坐标系中的速度
-                    // 计算法线与y轴的cos，y轴即(0, 1)
+                    // 计算法线t与y轴的cos，y轴即(0, 1)
                     // cosα = ab / | a || b |= (x1x2 + y1y2) / (√(x1²+ y1²)√(x2²+ y2²)) = y1 / √(x1²+ y1²)
-                    double cosa_y = std::fabs(y1) / std::sqrt(std::pow(x1, 2) + std::pow(y1, 2));
+                    double t_y_cosa = ty /
+                                      std::sqrt(std::pow(tx, 2) + std::pow(ty, 2));
                     // sin²a + cos²a = 1
-                    double sina_y = std::sqrt(1 - std::pow(cosa_y, 2));
-                    double v_y = cosa_y * vt_y; // + sina_y * v1t_x;
-                    double v_x = sina_y * vt_y; //+ cosa_y * v1t_x;
+                    double t_y_sina = std::sqrt(1 - std::pow(t_y_cosa, 2));
+                    if (tx < 0) // 第三、四象限，正弦是负值
+                    {
+                        t_y_sina = -t_y_sina;
+                    }
 
-                    status.velocity() = Velocity(v_x, v_y);
+                    double vx = vts_norm * t_y_sina;
+                    double vy = vts_norm * t_y_cosa;
+
+                    status.velocity() = Velocity(vx, vy);
                 }
 
-                // 非对心碰撞，受力计算。需要计算别人对自己的力 + 自己对别人的力的反作用力
+                // 非对心挤压（碰撞），受力计算。需要计算别人对自己的力 + 自己对别人的力的反作用力
                 {
                     // 别人对自己的力
                     {
                         auto &&[f_x2, f_y2] = ano_status.sum_of_forces();
-                        double f_cosa = (x1 * f_x2 + y1 * f_y2) / (std::sqrt(std::pow(x1, 2) + std::pow(y1, 2)) * std::sqrt(std::pow(f_x2, 2) + std::pow(f_y2, 2)));
+                        double f_cosa = (tx * f_x2 + ty * f_y2) /
+                                        (std::sqrt(std::pow(tx, 2) + std::pow(ty, 2)) *
+                                         std::sqrt(std::pow(f_x2, 2) + std::pow(f_y2, 2)));
 
                         // F压力 = F2 * cosθ             θ ∈ [ 0 - 90°), cosθ ∈ (0, 1)
                         // F压力 = 0                    θ ∈ [90 - 180°], cosθ ∈ [-1, 0], 1
                         if (0 < f_cosa && f_cosa < 1.0)
                         {
-                            double fp_value = meophys::abs(ano_status.sum_of_forces()) * f_cosa;
-                            double fp_x = fp_value / obj_distance * (status.coordinate().first - ano_status.coordinate().first);
-                            double fp_y = fp_value / obj_distance * (status.coordinate().second - ano_status.coordinate().second);
+                            double fp_norm = meophys::norm(ano_status.sum_of_forces()) * f_cosa;
+                            double fp_x = fp_norm / obj_distance * tx;
+                            double fp_y = fp_norm / obj_distance * ty;
                             collision_force += Force(fp_x, fp_y);
                         }
                         else if (f_cosa == 1.0 || (-1.0 <= f_cosa && f_cosa <= 0))
@@ -125,17 +155,16 @@ void World::on_tick(double ticked_time)
 
                     // 自己对别人的力的反作用力
                     {
-                        auto &&[neg_x1, neg_y1] = ano_status.coordinate() - status.coordinate();
                         auto &&[f_x2, f_y2] = status.sum_of_forces();
-                        double f_cosa = (neg_x1 * f_x2 + neg_y1 * f_y2) / (std::sqrt(std::pow(neg_x1, 2) + std::pow(neg_y1, 2)) * std::sqrt(std::pow(f_x2, 2) + std::pow(f_y2, 2)));
+                        double f_cosa = (neg_tx * f_x2 + neg_ty * f_y2) / (std::sqrt(std::pow(neg_tx, 2) + std::pow(neg_ty, 2)) * std::sqrt(std::pow(f_x2, 2) + std::pow(f_y2, 2)));
 
                         // F压力 = F2 * cosθ             θ ∈ [ 0 - 90°), cosθ ∈ (0, 1)
                         // F压力 = 0                    θ ∈ [90 - 180°], cosθ ∈ [-1, 0], 1
                         if (0 < f_cosa && f_cosa < 1.0)
                         {
-                            double fp_value = meophys::abs(status.sum_of_forces()) * f_cosa;
-                            double fp_x = fp_value / obj_distance * (ano_status.coordinate().first - status.coordinate().first);
-                            double fp_y = fp_value / obj_distance * (ano_status.coordinate().second - status.coordinate().second);
+                            double fp_norm = meophys::norm(status.sum_of_forces()) * f_cosa;
+                            double fp_x = fp_norm / obj_distance * tx;
+                            double fp_y = fp_norm / obj_distance * ty;
                             // 注意是反作用力，负的
                             collision_force += (-Force(fp_x, fp_y));
                         }
@@ -163,15 +192,15 @@ void World::on_tick(double ticked_time)
             // E = ½mv², v = sqrt(2E / m)
             auto r2 = distance_squared(coor, status.coordinate());
             auto e = ExplosionAttention * energy / r2;
-            auto v_value = std::sqrt(2 * e / obj->mass());
+            auto v_norm = std::sqrt(2 * e / obj->mass());
 
             double r = std::sqrt(r2);
             if (r == 0)
             {
                 continue;
             }
-            double v_x = (status.coordinate().first - coor.first) * v_value / r;
-            double v_y = (status.coordinate().second - coor.second) * v_value / r;
+            double v_x = (status.coordinate().first - coor.first) * v_norm / r;
+            double v_y = (status.coordinate().second - coor.second) * v_norm / r;
             status.velocity() += Velocity(v_x, v_y);
         }
 
