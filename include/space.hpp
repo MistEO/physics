@@ -30,6 +30,7 @@ namespace meophys
         virtual std::shared_ptr<Object>
         emplace_object(Object object, ObjectStatus status)
         {
+            std::unique_lock<std::mutex> lock(_task_mutex);
             auto ptr = std::make_shared<Object>(std::move(object));
             _task_queue.emplace(QueueBehavior::Emplace, ptr, std::move(status));
             return ptr;
@@ -37,12 +38,14 @@ namespace meophys
         virtual std::shared_ptr<Object>
         emplace_object(Object object, Coordinate coordinate, Velocity velocity = Velocity(0, 0), std::list<Force> forces = std::list<Force>())
         {
+            std::unique_lock<std::mutex> lock(_task_mutex);
             auto ptr = std::make_shared<Object>(std::move(object));
             _task_queue.emplace(QueueBehavior::Emplace, ptr, ObjectStatus(coordinate, velocity, forces));
             return ptr;
         }
         virtual void erase_object(std::shared_ptr<Object> objptr)
         {
+            std::unique_lock<std::mutex> lock(_task_mutex);
             _task_queue.emplace(QueueBehavior::Erase, objptr, ObjectStatus(Coordinate(0, 0)));
         }
         virtual bool exist_object(std::shared_ptr<Object> objptr) const
@@ -63,7 +66,8 @@ namespace meophys
         virtual void on_tick(double ticked_time) = 0;
         virtual void run_task()
         {
-            // std::unique_lock<std::shared_mutex> lock(_objs_mutex);
+            // TODO: time没start，任务就全不执行，怎么优化
+            std::unique_lock<std::mutex> lock(_task_mutex);
             while (!_task_queue.empty())
             {
                 auto &&[behavior, object_ptr, status] = _task_queue.front();
@@ -86,6 +90,7 @@ namespace meophys
         std::unordered_map<std::shared_ptr<Object>, ObjectStatus> _objects;
         std::queue<std::tuple<QueueBehavior, std::shared_ptr<Object>, ObjectStatus>> _task_queue;
         mutable std::shared_mutex _objs_mutex;
+        mutable std::mutex _task_mutex;
 
     private:
         static void callback_tick(Space *p_this, double ticked_time)

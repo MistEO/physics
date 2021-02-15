@@ -27,6 +27,8 @@ namespace meophys
         void stop();
         void pause();
         void resume();
+
+        bool is_running() const noexcept { return !_pause && _tick_thread.joinable(); }
         std::atomic<double> &timeflow() noexcept { return _timeflow; }
 
         template <typename Period>
