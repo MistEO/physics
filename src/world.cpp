@@ -67,12 +67,15 @@ void World::on_tick(double ticked_time)
                                            (std::sqrt(std::pow(tx, 2) + std::pow(ty, 2)) *
                                             std::sqrt(std::pow(v1x, 2) + std::pow(v1y, 2)));
                         // sin²a + cos²a = 1
-                        // TODO:这里的正弦值可能需要判断正负
                         double v1_t_sina = std::sqrt(1 - std::pow(v1_t_cosa, 2));
 
                         double v1_norm = meophys::norm(v1);
                         // 切线上的速度分量不参与碰撞，稍后直接还原到x/y坐标系中
                         v1s = v1_t_sina * v1_norm;
+                        if (tx * v1y - v1x * ty > 0)
+                        {
+                            v1s = -v1s;
+                        }
                         // 而法线上的速度分量参与碰撞后，再还原到x/y坐标系中
                         v1t = v1_t_cosa * v1_norm;
                     }
@@ -92,37 +95,64 @@ void World::on_tick(double ticked_time)
                         double v2_t_cosa = (tx * v2x + ty * v2y) /
                                            (std::sqrt(std::pow(tx, 2) + std::pow(ty, 2)) *
                                             std::sqrt(std::pow(v2x, 2) + std::pow(v2y, 2)));
-                        // TODO:这里的正弦值可能需要判断正负
-                        // double v2_t_sina = std::sqrt(1 - std::pow(v2_t_cosa, 2));
 
                         double v2_norm = meophys::norm(v2);
-                        // v2s = v2_t_sina * v2_norm;
-                        // 而法线上的速度分量参与碰撞后，再还原到x/y坐标系中
+                        // 法线上的速度分量参与碰撞后，再还原到x/y坐标系中
                         v2t = v2_t_cosa * v2_norm;
                     }
 
                     // 法线t上碰撞后的速度
                     // v1' = ( (m1-e*m2)*v1+(1+e)*m2*v2 ) / ( m1+m2 )
-                    v1t = (((m1 - e * m2) * v1t + (1 + e) * m2 * v2t) / (m1 + m2));
+                    double new_v1t = (((m1 - e * m2) * v1t + (1 + e) * m2 * v2t) / (m1 + m2));
                     // 法线t/切线s坐标系上的最终速度
-                    double vts_norm = meophys::norm(Velocity(v1s, v1t));
+                    double vts_norm = meophys::norm(Velocity(v1s, new_v1t));
 
-                    // 将法线上的速度，转换成x/y坐标系中的速度
-                    // 计算法线t与y轴的cos，y轴即(0, 1)
-                    // cosα = ab / | a || b |= (x1x2 + y1y2) / (√(x1²+ y1²)√(x2²+ y2²)) = y1 / √(x1²+ y1²)
-                    double t_y_cosa = ty /
-                                      std::sqrt(std::pow(tx, 2) + std::pow(ty, 2));
-                    // sin²a + cos²a = 1
-                    double t_y_sina = std::sqrt(1 - std::pow(t_y_cosa, 2));
-                    if (tx < 0) // 第三、四象限，正弦是负值
+                    if (vts_norm == 0)
                     {
-                        t_y_sina = -t_y_sina;
+                        status.velocity() = Velocity(0, 0);
                     }
+                    else
+                    {
+                        // 将法线上的速度，转换成x/y坐标系中的速度
+                        // 计算法线t与y轴的cos，y轴即(0, 1)
+                        // cosα = ab / | a || b |= (x1x2 + y1y2) / (√(x1²+ y1²)√(x2²+ y2²)) = y1 / √(x1²+ y1²)
+                        double t_y_cosa = ty /
+                                          std::sqrt(std::pow(tx, 2) + std::pow(ty, 2));
+                        double t_y_angle = std::acos(t_y_cosa);
+                        if (tx < 0)
+                        {
+                            t_y_angle += M_PIl;
+                        }
 
-                    double vx = vts_norm * t_y_sina;
-                    double vy = vts_norm * t_y_cosa;
+                        double vts_t_cosa = new_v1t / vts_norm;
+                        double vts_t_angle = std::acos(vts_t_cosa);
+                        if (v1s < 0)
+                        {
+                            vts_t_angle = -vts_t_angle;
+                        }
 
-                    status.velocity() = Velocity(vx, vy);
+                        double vts_y_angle = t_y_angle + vts_t_angle;
+                        while (vts_y_angle >= 2 * M_PIl)
+                        {
+                            vts_y_angle -= 2 * M_PIl;
+                        }
+
+                        double vts_y_cosa = std::cos(vts_y_angle);
+                        if (std::fabs(vts_y_cosa) < PlanckLength)
+                        {
+                            vts_y_cosa = 0;
+                        }
+
+                        double vy = vts_y_cosa * vts_norm;
+                        double vx = std::sqrt(std::pow(vts_norm, 2) - std::pow(vy, 2));
+
+                        if (vts_y_angle > M_PIl)
+                        {
+                            vx = -vx;
+                        }
+
+                        status.velocity() = Velocity(vx, vy);
+                    }
                 }
 
                 // 非对心挤压（碰撞），受力计算。需要计算别人对自己的力 + 自己对别人的力的反作用力
