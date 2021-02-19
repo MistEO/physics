@@ -27,7 +27,7 @@ namespace meophys
         }
         virtual ~Space() = default;
 
-        virtual std::shared_ptr<Object>
+        std::shared_ptr<Object>
         emplace_object(Object object, ObjectStatus status)
         {
             std::unique_lock<std::mutex> lock(_task_mutex);
@@ -35,7 +35,7 @@ namespace meophys
             _task_queue.emplace(QueueBehavior::Emplace, ptr, std::move(status));
             return ptr;
         }
-        virtual std::shared_ptr<Object>
+        std::shared_ptr<Object>
         emplace_object(Object object, Coordinate coordinate, Velocity velocity = Velocity(0, 0), std::list<Force> forces = std::list<Force>())
         {
             std::unique_lock<std::mutex> lock(_task_mutex);
@@ -43,28 +43,28 @@ namespace meophys
             _task_queue.emplace(QueueBehavior::Emplace, ptr, ObjectStatus(coordinate, velocity, forces));
             return ptr;
         }
-        virtual void erase_object(std::shared_ptr<Object> objptr)
+        void erase_object(std::shared_ptr<Object> objptr)
         {
             std::unique_lock<std::mutex> lock(_task_mutex);
             _task_queue.emplace(QueueBehavior::Erase, objptr, ObjectStatus(Coordinate(0, 0)));
         }
-        virtual bool exist_object(std::shared_ptr<Object> objptr) const
+        bool exist_object(std::shared_ptr<Object> objptr) const
         {
             std::shared_lock<std::shared_mutex> lock(_objs_mutex);
             return _objects.find(objptr) != _objects.end();
         }
 
-        virtual const ObjectStatus &object_status(std::shared_ptr<Object> objptr) const
+        const ObjectStatus &object_status(std::shared_ptr<Object> objptr) const
         {
             std::shared_lock<std::shared_mutex> lock(_objs_mutex);
             return _objects.at(objptr);
         }
 
-        virtual Time &time() { return *_time_ptr; }
+        Time &time() { return *_time_ptr; }
 
     protected:
         virtual void on_tick(double ticked_time) = 0;
-        virtual void run_task()
+        void run_task()
         {
             // TODO: time没start，任务就全不执行，怎么优化
             std::unique_lock<std::mutex> lock(_task_mutex);

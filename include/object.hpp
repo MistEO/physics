@@ -21,17 +21,17 @@ namespace meophys
         Object(const Object &rhs) = default;
         Object(Object &&rhs) = default;
 
-        virtual ~Object() = default;
+        ~Object() = default;
 
-        virtual const std::string &name() const noexcept { return _name; }
-        virtual const long double &mass() const noexcept { return _mass; }
-        virtual long double &mass() noexcept { return _mass; }
-        virtual const double &radius() const noexcept { return _radius; }
-        virtual double &radius() noexcept { return _radius; }
-        virtual const double &elasticity() const noexcept { return _elasticity; }
-        virtual double &elasticity() noexcept { return _elasticity; }
-        virtual const double &friction() const noexcept { return _friction; }
-        virtual double &friction() noexcept { return _friction; }
+        const std::string &name() const noexcept { return _name; }
+        const long double &mass() const noexcept { return _mass; }
+        long double &mass() noexcept { return _mass; }
+        const double &radius() const noexcept { return _radius; }
+        double &radius() noexcept { return _radius; }
+        const double &elasticity() const noexcept { return _elasticity; }
+        double &elasticity() noexcept { return _elasticity; }
+        const double &friction() const noexcept { return _friction; }
+        double &friction() noexcept { return _friction; }
 
         Object &operator=(const Object &rhs) = default;
         Object &operator=(Object &&rhs) = default;
