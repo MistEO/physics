@@ -5,6 +5,7 @@
 #include <shared_mutex>
 #include <queue>
 #include <tuple>
+#include <atomic>
 
 #include "define.h"
 #include "phys_time.h"
@@ -22,31 +23,63 @@ namespace meophys
         };
 
     public:
+        using ObjectAndStatusMap = std::unordered_map<std::shared_ptr<Object>, ObjectStatus>;
+
         Space() : _time_ptr(std::make_unique<Time>(callback_tick, this))
         {
         }
+        Space(const Space &) = delete;
+        Space(Space &&) = delete;
+
         virtual ~Space() = default;
 
         std::shared_ptr<Object>
         emplace_object(Object object, ObjectStatus status)
         {
-            std::unique_lock<std::mutex> lock(_task_mutex);
             auto ptr = std::make_shared<Object>(std::move(object));
-            _task_queue.emplace(QueueBehavior::Emplace, ptr, std::move(status));
+            std::unique_lock<std::mutex> task_lock(_task_mutex);
+            if (_is_tick_running)
+            {
+                _task_queue.emplace(QueueBehavior::Emplace, ptr, std::move(status));
+            }
+            else
+            {
+                std::unique_lock<std::shared_mutex> obj_lock(_objs_mutex);
+                task_lock.unlock();
+                _objects.emplace(ptr, std::move(status));
+            }
             return ptr;
         }
         std::shared_ptr<Object>
         emplace_object(Object object, Coordinate coordinate, Velocity velocity = Velocity(0, 0), std::list<Force> forces = std::list<Force>())
         {
-            std::unique_lock<std::mutex> lock(_task_mutex);
             auto ptr = std::make_shared<Object>(std::move(object));
-            _task_queue.emplace(QueueBehavior::Emplace, ptr, ObjectStatus(coordinate, velocity, forces));
+            std::unique_lock<std::mutex> task_lock(_task_mutex);
+            if (_is_tick_running)
+            {
+                _task_queue.emplace(QueueBehavior::Emplace, ptr, ObjectStatus(coordinate, velocity, forces));
+            }
+            else
+            {
+                std::unique_lock<std::shared_mutex> obj_lock(_objs_mutex);
+                task_lock.unlock();
+                _objects.emplace(ptr, ObjectStatus(coordinate, velocity, forces));
+            }
             return ptr;
         }
         void erase_object(std::shared_ptr<Object> objptr)
         {
-            std::unique_lock<std::mutex> lock(_task_mutex);
-            _task_queue.emplace(QueueBehavior::Erase, objptr, ObjectStatus(Coordinate(0, 0)));
+            std::unique_lock<std::mutex> task_lock(_task_mutex);
+            if (_is_tick_running)
+            {
+                _task_queue.emplace(QueueBehavior::Erase, objptr, ObjectStatus(Coordinate(0, 0)));
+            }
+            else
+            {
+                std::unique_lock<std::shared_mutex> obj_lock(_objs_mutex);
+                task_lock.unlock();
+                _objects.erase(objptr);
+            }
         }
         bool exist_object(std::shared_ptr<Object> objptr) const
         {
@@ -62,12 +95,38 @@ namespace meophys
 
         Time &time() { return *_time_ptr; }
 
+        Space &operator=(const Space &) = delete;
+        Space &operator=(Space &&) = delete;
+
     protected:
-        virtual void on_tick(double ticked_time) = 0;
+        virtual void on_tick(double ticked_time)
+        {
+            std::unique_lock<std::mutex> task_lock(_task_mutex);
+            _is_tick_running = true;
+            run_task();
+            task_lock.unlock();
+
+            std::shared_lock<std::shared_mutex> rdlock(_objs_mutex);
+            auto cur_objs = _objects;
+            const auto pre_objs = _objects;
+            rdlock.unlock();
+
+            on_tick(ticked_time, pre_objs, cur_objs);
+
+            std::unique_lock<std::shared_mutex> wrlock(_objs_mutex);
+            _objects = std::move(cur_objs);
+            wrlock.unlock();
+
+            task_lock.lock();
+            _is_tick_running = false;
+            task_lock.unlock();
+        }
+        virtual void on_tick(double ticked_time, const ObjectAndStatusMap &pre_objs, ObjectAndStatusMap &cur_objs) = 0;
+
         void run_task()
         {
-            // TODO: time没start，任务就全不执行，怎么优化
-            std::unique_lock<std::mutex> lock(_task_mutex);
+            std::unique_lock<std::shared_mutex> wrlock(_objs_mutex);
+
             while (!_task_queue.empty())
             {
                 auto &&[behavior, object_ptr, status] = _task_queue.front();
@@ -91,6 +150,7 @@ namespace meophys
         std::queue<std::tuple<QueueBehavior, std::shared_ptr<Object>, ObjectStatus>> _task_queue;
         mutable std::shared_mutex _objs_mutex;
         mutable std::mutex _task_mutex;
+        mutable std::atomic_bool _is_tick_running = false;
 
     private:
         static void callback_tick(Space *p_this, double ticked_time)

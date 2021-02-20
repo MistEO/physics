@@ -14,6 +14,6 @@ namespace meophys
         virtual ~Interstellar() = default;
 
     protected:
-        virtual void on_tick(double ticked_time) override;
+        virtual void on_tick(double ticked_time, const ObjectAndStatusMap &pre_objs, ObjectAndStatusMap &cur_objs) override;
     };
 } // namespace meophys
