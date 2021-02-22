@@ -11,7 +11,7 @@ namespace meophys
         ObjectStatus(Coordinate coordinate, Velocity velocity = Velocity(0, 0), std::list<Force> forces = std::list<Force>())
             : _coordinate(std::move(coordinate)), _velocity(std::move(velocity)), _forces(std::move(forces)) {}
         ObjectStatus(const ObjectStatus &) = default;
-        ObjectStatus(ObjectStatus &&) noexcept = default;
+        ObjectStatus(ObjectStatus &&) = default;
         ~ObjectStatus() = default;
         // 坐标，单位m
         Coordinate &coordinate() noexcept { return _coordinate; }
@@ -44,6 +44,9 @@ namespace meophys
         {
             return _forces.emplace_back(std::move(force));
         }
+
+        ObjectStatus &operator=(const ObjectStatus &) = default;
+        ObjectStatus &operator=(ObjectStatus &&) = default;
 
     private:
         Coordinate _coordinate;           // 坐标，单位m

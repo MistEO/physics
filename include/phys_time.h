@@ -21,6 +21,8 @@ namespace meophys
 
     public:
         Time(CallbackFunc on_tick, Space *space_ptr);
+        Time(const Time &rhs) = delete;
+        Time(Time &&rhs) = delete;
         ~Time();
 
         void start();
@@ -46,6 +48,9 @@ namespace meophys
             std::shared_lock<std::shared_mutex> lock(_elapsed_mutex);
             return std::chrono::duration_cast<std::chrono::duration<int64_t, Period>>(_elapsed);
         }
+
+        Time &operator=(const Time &) = delete;
+        Time &operator=(Time &&) = delete;
 
     private:
         static void tick(Time *p_this, Space *p_space);

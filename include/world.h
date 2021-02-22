@@ -19,6 +19,8 @@ namespace meophys
 
     public:
         World() = default;
+        World(const World &) = delete;
+        World(World &&) = delete;
         virtual ~World() = default;
 
         void set_boundary(int top, int left, int bottom, int right)
@@ -34,6 +36,9 @@ namespace meophys
             std::unique_lock<std::mutex> lock(_explosion_mutex);
             _explosions.emplace_back(std::move(coordinate), std::move(energy));
         }
+
+        World &operator=(const World &) = delete;
+        World &operator=(World &&) = delete;
 
     protected:
         virtual void on_tick(double ticked_time, const ObjectAndStatusMap &pre_objs, ObjectAndStatusMap &cur_objs) override;

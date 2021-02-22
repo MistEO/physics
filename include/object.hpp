@@ -34,7 +34,7 @@ namespace meophys
         double &friction() noexcept { return _friction; }
 
         Object &operator=(const Object &rhs) = default;
-        Object &operator=(Object &&rhs) = default;
+        Object &operator=(Object &&rhs) noexcept = default;
 
     protected:
         std::string _name;        // 名字，无实际作用

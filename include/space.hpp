@@ -25,11 +25,9 @@ namespace meophys
     public:
         using ObjectAndStatusMap = std::unordered_map<std::shared_ptr<Object>, ObjectStatus>;
 
-        Space() : _time_ptr(std::make_unique<Time>(callback_tick, this))
-        {
-        }
-        Space(const Space &) = delete;
-        Space(Space &&) = delete;
+        Space() : _time_ptr(std::make_unique<Time>(callback_tick, this)) {}
+        Space(const Space &rhs) = delete;
+        Space(Space &&rhs) = delete;
 
         virtual ~Space() = default;
 
@@ -95,8 +93,8 @@ namespace meophys
 
         Time &time() { return *_time_ptr; }
 
-        Space &operator=(const Space &) = delete;
-        Space &operator=(Space &&) = delete;
+        Space &operator=(const Space &rhs) = delete;
+        Space &operator=(Space &&rhs) = delete;
 
     protected:
         virtual void on_tick(double ticked_time)
