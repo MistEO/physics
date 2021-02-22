@@ -5,25 +5,21 @@
 
 using namespace meophys;
 
-void World::on_tick(double ticked_time)
+void World::on_tick(double ticked_time, const ObjectAndStatusMap &pre_objs, ObjectAndStatusMap &cur_objs)
 {
-    std::shared_lock<std::shared_mutex> rdlock(_objs_mutex);
-    auto cur_objects = _objects;
-    const auto pre_objects = _objects;
-    rdlock.unlock();
     std::unique_lock<std::mutex> exp_lock(_explosion_mutex);
     // 直接清空当前爆炸容器，本次tick全部计算完成
     const auto cur_explosions = std::move(_explosions);
     exp_lock.unlock();
 
-    for (auto &&[obj, status] : cur_objects)
+    for (auto &&[obj, status] : cur_objs)
     {
 #ifdef DEBUG
         auto name = obj->name(); // for debugger
 #endif
         // 碰撞的计算
         Force collision_force(0, 0);
-        for (auto &&[ano_obj, ano_status] : pre_objects)
+        for (auto &&[ano_obj, ano_status] : pre_objs)
         {
 #ifdef DEBUG
             auto ano_name = ano_obj->name(); // for debugger
@@ -348,8 +344,4 @@ void World::on_tick(double ticked_time)
         // Vt = V0 + at
         status.velocity() = Velocity(v_x, v_y);
     }
-
-    std::unique_lock<std::shared_mutex> wrlock(_objs_mutex);
-    _objects = std::move(cur_objects);
-    run_task();
 }

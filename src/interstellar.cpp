@@ -9,13 +9,8 @@
 
 using namespace meophys;
 
-void Interstellar::on_tick(double ticked_time)
+void Interstellar::on_tick(double ticked_time, const ObjectAndStatusMap &pre_objs, ObjectAndStatusMap &cur_objs)
 {
-    std::shared_lock<std::shared_mutex> rdlock(_objs_mutex);
-    auto cur_objects = _objects;
-    const auto pre_objects = _objects;
-    rdlock.unlock();
-
     // TODO: 缓存性能优化
 #ifdef ENABLE_CACHE
     using objptr_pair = std::pair<std::shared_ptr<Object>, std::shared_ptr<Object>>;
@@ -23,11 +18,11 @@ void Interstellar::on_tick(double ticked_time)
     std::map<objptr_pair, Force> cache;
 #endif
 
-    for (auto &&[obj, status] : cur_objects)
+    for (auto &&[obj, status] : cur_objs)
     {
         Force gravitation(0, 0);
         auto &&[c_x, c_y] = status.coordinate();
-        for (auto &&[ano_obj, ano_status] : pre_objects)
+        for (auto &&[ano_obj, ano_status] : pre_objs)
         {
             if (obj == ano_obj)
             {
@@ -69,7 +64,4 @@ void Interstellar::on_tick(double ticked_time)
         // Vt = V0 + at
         status.velocity() += acc * ticked_time;
     }
-    std::unique_lock<std::shared_mutex> wrlock(_objs_mutex);
-    _objects = std::move(cur_objects);
-    run_task();
 }
