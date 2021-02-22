@@ -34,8 +34,13 @@ namespace meophys
         template <typename Period>
         std::chrono::duration<int64_t, Period> elapsed() const
         {
+#ifdef WIN32
+            static_assert(std::_Is_ratio_v<Period>,
+                          "period must be a specialization of ratio");
+#else
             static_assert(std::chrono::__is_ratio<Period>::value,
                           "period must be a specialization of ratio");
+#endif
             static_assert(Period::num > 0, "period must be positive");
 
             std::shared_lock<std::shared_mutex> lock(_elapsed_mutex);

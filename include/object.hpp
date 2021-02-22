@@ -19,7 +19,7 @@ namespace meophys
                 throw std::invalid_argument("mass must be positive");
         }
         Object(const Object &rhs) = default;
-        Object(Object &&rhs) = default;
+        Object(Object &&rhs) noexcept = default;
 
         ~Object() = default;
 

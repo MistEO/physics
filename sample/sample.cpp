@@ -2,7 +2,8 @@
 #include <string>
 #include <cmath>
 #include <cstdarg>
-#include <unistd.h>
+#include <thread>
+//#include <unistd.h>
 
 #include "physics.h"
 
@@ -16,9 +17,9 @@ void print_loop(Space *space, const std::vector<std::shared_ptr<Object>> &object
 
 int main()
 {
-    world_and_boom();
+    // world_and_boom();
     // world_and_ball_test();
-    // world_and_many_ball();
+    world_and_many_ball();
     // interstellar_and_planet();
     return 0;
 }
@@ -85,7 +86,8 @@ void world_and_boom()
     world.time().start();
 
     std::thread t(print_loop, &world, print_vec, 1.0);
-    sleep(3);
+    //sleep(3);
+    std::this_thread::sleep_for(std::chrono::seconds(3));
     world.explode(world.object_status(tnt_ptr).coordinate(), 10000);
     world.erase_object(tnt_ptr);
     t.join();
@@ -141,6 +143,7 @@ void print_loop(Space *space, const std::vector<std::shared_ptr<Object>> &object
             pre_x = x;
             pre_y = y;
         }
-        usleep(1000 * 10);
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        //usleep(1000 * 10);
     }
 }
